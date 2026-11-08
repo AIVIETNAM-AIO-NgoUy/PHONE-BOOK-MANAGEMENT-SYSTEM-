@@ -1,0 +1,37 @@
+# Version control & editor artifacts
+.git
+.gitignore
+.DS_Store
+.vscode/
+.idea/
+
+# Python & Virtual Environment
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Environment files
+.env
+.env.*
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Local databases, backups & generated static files
+db.sqlite3
+backups/
+staticfiles/
+media/
+
+# Project specification & documentation artifacts
+.agents/
+.specify/
+specs/
+Requirement Specification_Group1.pdf
+extracted_spec.txt
+pdf_images/
