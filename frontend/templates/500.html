@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}500 Server Error — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <section class="card error-state">
+    <div class="card-body">
+      <span class="error-code">500 Server Error</span>
+      <h1 class="error-title">Something Went Wrong</h1>
+      <p class="error-message">
+        An unexpected error occurred on our server. Please try again in a few moments.
+      </p>
+      <a href="/" class="btn btn-primary">Return Home</a>
+    </div>
+  </section>
+{% endblock %}
