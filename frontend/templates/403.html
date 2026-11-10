@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}403 Forbidden — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <section class="card error-state">
+    <div class="card-body">
+      <span class="error-code">403 Forbidden</span>
+      <h1 class="error-title">Access Denied</h1>
+      <p class="error-message">
+        You do not have permission to access this resource. If you believe this is an error,
+        please contact your system administrator.
+      </p>
+      <a href="/" class="btn btn-primary">Return Home</a>
+    </div>
+  </section>
+{% endblock %}
