@@ -1,0 +1,57 @@
+<div id="profile-card" class="card profile-summary-card">
+  <div class="card-header">
+    <h2 class="card-title">Account Summary</h2>
+    {% if user.account_status == "Active" %}
+      <span class="badge badge-success">{{ user.account_status }}</span>
+    {% else %}
+      <span class="badge badge-danger">{{ user.account_status }}</span>
+    {% endif %}
+  </div>
+  <div class="card-body">
+    {% if profile_updated %}
+      <div class="alert alert-success alert-spaced" role="alert">
+        <span>Profile updated successfully.</span>
+      </div>
+    {% endif %}
+
+    <div class="profile-card-layout">
+      {% if user.avatar_url %}
+        <img
+          src="{{ user.avatar_url }}"
+          alt="{{ user.full_name|default:user.username }} avatar"
+          class="profile-avatar"
+        />
+      {% else %}
+        <div class="profile-avatar profile-avatar-placeholder" aria-hidden="true">
+          {{ user.username|slice:":1"|upper }}
+        </div>
+      {% endif %}
+
+      <div class="profile-meta">
+        <div class="profile-name">
+          {{ user.full_name|default:user.username }}
+        </div>
+        <div class="profile-email">
+          @{{ user.username }} &middot; {{ user.email }}
+        </div>
+        <div class="profile-badges">
+          <span class="badge badge-primary">Role: {{ user.role }}</span>
+          <span>User ID: #{{ user.id }}</span>
+          <span>Joined: {{ user.created_at|date:"Y-m-d" }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-card-security" style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--color-border);">
+      <div style="font-size: 0.8125rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.75rem;">
+        Security & Access
+      </div>
+      <a href="{% url 'accounts:password_change' %}" class="btn btn-secondary btn-sm" style="width: 100%; justify-content: center;">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+          <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+        </svg>
+        Change Password
+      </a>
+    </div>
+  </div>
+</div>
