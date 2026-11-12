@@ -1,0 +1,196 @@
+{% if oob_member_count_badge %}
+  <span
+    id="group-member-count-badge"
+    class="badge badge-primary"
+    style="vertical-align: middle; margin-left: 0.35rem;"
+    hx-swap-oob="true"
+  >
+    {{ total_members_count }}
+  </span>
+{% endif %}
+<div id="group-member-section">
+  <div class="card-header contact-list-toolbar">
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; max-width: 100%;">
+      {% if available_contacts %}
+        <form
+          method="post"
+          action="{% url 'groups:member_add' group.pk %}"
+          hx-post="{% url 'groups:member_add' group.pk %}"
+          hx-target="#group-member-section"
+          hx-swap="outerHTML"
+          style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: nowrap; max-width: 100%;"
+        >
+          {% csrf_token %}
+          <label for="group-add-contact-select" class="sr-only">Add contact to group</label>
+          <select
+            id="group-add-contact-select"
+            name="contact_id"
+            class="form-control filter-select"
+            style="max-width: 100%;"
+            required
+          >
+            <option value="">Select a contact to add...</option>
+            {% for contact_opt in available_contacts %}
+              <option value="{{ contact_opt.pk }}">
+                {{ contact_opt.full_name }}{% if contact_opt.primary_phone %} ({{ contact_opt.primary_phone.phone_number }}){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn btn-primary btn-sm" style="flex-shrink: 0; white-space: nowrap;">+ Add Member</button>
+        </form>
+      {% else %}
+        <span style="font-size: 0.875rem; color: var(--color-text-muted);">
+          All contacts in your directory are already in this group.
+        </span>
+      {% endif %}
+    </div>
+
+    <form
+      method="get"
+      action="{% url 'groups:detail' group.pk %}"
+      class="search-toolbar"
+      role="search"
+      aria-label="Search group members"
+    >
+      <div class="search-input-group">
+        <label for="group-member-search-input" class="sr-only">Search group members</label>
+        <input
+          type="search"
+          id="group-member-search-input"
+          name="q"
+          value="{{ search_query|default:'' }}"
+          class="form-control search-input"
+          placeholder="Search members by name, phone, or email..."
+          autocomplete="off"
+          hx-get="{% url 'groups:detail' group.pk %}"
+          hx-trigger="keyup changed delay:300ms, search"
+          hx-target="#group-member-section"
+          hx-swap="outerHTML"
+        />
+        {% if search_query %}
+          <a href="{% url 'groups:detail' group.pk %}" class="btn btn-secondary btn-sm">Clear</a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table table-responsive-cards">
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Primary Phone</th>
+          <th>Email</th>
+          <th style="text-align: right; white-space: nowrap;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="group-member-table-body">
+        {% for contact in member_contacts %}
+          <tr id="group-member-row-{{ contact.pk }}">
+            <td data-label="Member">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                {% if contact.avatar %}
+                  <img
+                    src="{{ contact.avatar }}"
+                    alt="{{ contact.full_name }}"
+                    class="contact-avatar-sm"
+                  />
+                {% else %}
+                  <div class="contact-avatar-placeholder contact-avatar-sm" aria-hidden="true">
+                    {{ contact.full_name|slice:":1"|upper }}
+                  </div>
+                {% endif %}
+                <a
+                  href="{% url 'contacts:detail' contact.pk %}"
+                  style="font-weight: 600; color: var(--color-text);"
+                >
+                  {{ contact.full_name }}
+                </a>
+              </div>
+            </td>
+            <td data-label="Primary Phone">
+              {% if contact.primary_phone %}
+                <span style="font-family: var(--font-mono); font-size: 0.875rem;">
+                  {{ contact.primary_phone.phone_number }}
+                </span>
+                <span class="badge badge-primary" style="margin-left: 0.25rem;">
+                  {{ contact.primary_phone.phone_type }}
+                </span>
+              {% else %}
+                <span style="color: var(--color-text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td data-label="Email">
+              {% if contact.email %}
+                <span>{{ contact.email }}</span>
+              {% else %}
+                <span style="color: var(--color-text-muted);">—</span>
+              {% endif %}
+            </td>
+            <td class="table-actions-cell" data-label="Actions" style="text-align: right; white-space: nowrap;">
+              <div class="table-actions table-actions-inline" style="flex-wrap: nowrap;">
+                <a href="{% url 'contacts:detail' contact.pk %}" class="btn btn-secondary btn-sm">
+                  View
+                </a>
+                <form
+                  method="post"
+                  action="{% url 'groups:member_remove' group.pk contact.pk %}"
+                  hx-post="{% url 'groups:member_remove' group.pk contact.pk %}"
+                  hx-target="#group-member-section"
+                  hx-swap="outerHTML"
+                  style="display: inline;"
+                >
+                  {% csrf_token %}
+                  {% if search_query %}
+                    <input type="hidden" name="q" value="{{ search_query }}" />
+                  {% endif %}
+                  {% if page_obj.number > 1 %}
+                    <input type="hidden" name="page" value="{{ page_obj.number }}" />
+                  {% endif %}
+                  <button type="submit" class="btn btn-danger btn-sm">Remove</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="4" class="table-empty-cell" style="text-align: center; padding: 2.5rem 1.5rem; color: var(--color-text-muted);">
+              {% if search_query %}
+                No members matched "{{ search_query }}".
+              {% else %}
+                No contacts assigned to this group yet. Use the selector above to add members.
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page_obj.has_other_pages %}
+    <div class="card-footer pagination-bar">
+      <div style="font-size: 0.875rem; color: var(--color-text-muted);">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        ({{ page_obj.paginator.count }} member{{ page_obj.paginator.count|pluralize }})
+      </div>
+      <div style="display: flex; gap: 0.5rem;">
+        {% if page_obj.has_previous %}
+          <a
+            href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+            class="btn btn-secondary btn-sm"
+          >
+            &larr; Previous
+          </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a
+            href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+            class="btn btn-secondary btn-sm"
+          >
+            Next &rarr;
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
