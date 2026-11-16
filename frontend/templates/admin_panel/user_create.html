@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Create User Account — Admin Panel{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Create User Account</h1>
+      <p class="page-subtitle">
+        Provision a new platform user account with role assignment and initial credentials.
+      </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'admin_panel:user_list' %}" class="btn btn-secondary">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+        </svg>
+        Back to User Roster
+      </a>
+    </div>
+  </div>
+
+  <div class="card" style="max-width: 1100px; margin: 0 auto;">
+    <div class="card-header">
+      <h2 class="card-title">User Account Details</h2>
+    </div>
+    <div class="card-body">
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger alert-spaced" role="alert">
+          <div>
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'admin_panel:user_create' %}" novalidate>
+        {% csrf_token %}
+
+        <div class="form-grid-2">
+          <!-- Row 1: Username & Email Address -->
+          <div class="form-group">
+            <label for="{{ form.username.id_for_label }}" class="form-label">
+              Username <span style="color: var(--color-danger);">*</span>
+            </label>
+            {{ form.username }}
+            {% if form.username.errors %}
+              <div class="form-error">{{ form.username.errors|join:" " }}</div>
+            {% else %}
+              <div class="form-help">3-50 characters, letters, numbers, and underscores.</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}" class="form-label">
+              Email Address <span style="color: var(--color-danger);">*</span>
+            </label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="form-error">{{ form.email.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Row 2: Full Name & Initial Password -->
+          <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <div class="form-error">{{ form.full_name.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.password.id_for_label }}" class="form-label">
+              Initial Password <span style="color: var(--color-danger);">*</span>
+            </label>
+            {{ form.password }}
+            {% if form.password.errors %}
+              <div class="form-error">{{ form.password.errors|join:" " }}</div>
+            {% else %}
+              <div class="form-help">At least 8 characters with both letters and numbers.</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Row 3: Role Assignment & Account Status (Radio Cards) -->
+        <div class="form-grid-2" style="margin-top: 0.5rem;">
+          <!-- Role Assignment -->
+          <div class="form-group">
+            <label class="form-label">
+              Role Assignment <span style="color: var(--color-danger);">*</span>
+            </label>
+            {% if form.role.errors %}
+              <div class="form-error" style="margin-bottom: 0.5rem;">{{ form.role.errors|join:" " }}</div>
+            {% endif %}
+            <div class="radio-card-grid">
+              {% for r in form.role %}
+                <label class="radio-card" for="{{ r.id_for_label }}">
+                  {{ r.tag }}
+                  <div class="radio-card-inner">
+                    <div class="radio-card-header">
+                      <span class="radio-card-title">
+                        {% if r.data.value == "Admin" %}
+                          <span class="radio-card-icon" style="color: var(--color-primary);">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                              <path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clip-rule="evenodd" />
+                            </svg>
+                          </span>
+                          Administrator
+                        {% else %}
+                          <span class="radio-card-icon" style="color: var(--color-text-muted);">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                            </svg>
+                          </span>
+                          Standard User
+                        {% endif %}
+                      </span>
+                    </div>
+                    <span class="radio-card-desc">
+                      {% if r.data.value == "Admin" %}
+                        Full access to administration, governance, and audit trails.
+                      {% else %}
+                        Regular contact book access; cannot access admin features.
+                      {% endif %}
+                    </span>
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Account Status -->
+          <div class="form-group">
+            <label class="form-label">
+              Account Status <span style="color: var(--color-danger);">*</span>
+            </label>
+            {% if form.account_status.errors %}
+              <div class="form-error" style="margin-bottom: 0.5rem;">{{ form.account_status.errors|join:" " }}</div>
+            {% endif %}
+            <div class="radio-card-grid">
+              {% for r in form.account_status %}
+                <label class="radio-card" for="{{ r.id_for_label }}">
+                  {{ r.tag }}
+                  <div class="radio-card-inner">
+                    <div class="radio-card-header">
+                      <span class="radio-card-title">
+                        {% if r.data.value == "Active" %}
+                          <span class="radio-card-icon" style="color: var(--color-success);">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                            </svg>
+                          </span>
+                          Active
+                        {% else %}
+                          <span class="radio-card-icon" style="color: var(--color-danger);">
+                            <svg viewBox="0 0 20 20" fill="currentColor" width="18" height="18">
+                              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                            </svg>
+                          </span>
+                          Locked
+                        {% endif %}
+                      </span>
+                    </div>
+                    <span class="radio-card-desc">
+                      {% if r.data.value == "Active" %}
+                        Normal authentication and session privileges.
+                      {% else %}
+                        Immediate session revocation and login block.
+                      {% endif %}
+                    </span>
+                  </div>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions-row" style="margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;">
+          <a href="{% url 'admin_panel:user_list' %}" class="btn btn-secondary">Cancel</a>
+          <button type="submit" class="btn btn-primary">Create User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}
