@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}User Accounts Roster — Admin Panel{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        User Accounts
+        {% include "admin_panel/partials/user_count_badge.html" with oob=False %}
+      </h1>
+      <p class="page-subtitle">
+        Search and govern platform user accounts. Personal contact directories remain strictly private.
+      </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'admin_panel:user_create' %}" class="btn btn-primary">
+        <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+          <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+        </svg>
+        + New User
+      </a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header contact-list-toolbar">
+      {% include "admin_panel/partials/user_status_filter_pills.html" with oob=False %}
+
+      <form
+        method="get"
+        action="{% url 'admin_panel:user_list' %}"
+        class="search-toolbar"
+        hx-get="{% url 'admin_panel:user_list' %}"
+        hx-target="#admin-user-results-container"
+        hx-trigger="submit, keyup changed delay:300ms from:#admin-user-search-input, change from:#admin-user-sort"
+        hx-push-url="true"
+      >
+        {% include "admin_panel/partials/user_status_hidden_input.html" with oob=False %}
+        <div class="search-input-group">
+          <label for="admin-user-search-input" class="sr-only">Search users by username or email</label>
+          <input
+            type="search"
+            id="admin-user-search-input"
+            name="q"
+            value="{{ search_query }}"
+            placeholder="Search username or email..."
+            class="form-control search-input"
+          />
+        </div>
+        <div class="sort-control-group">
+          <label for="admin-user-sort" class="sr-only">Sort users</label>
+          <select id="admin-user-sort" name="sort" class="form-control filter-select">
+            <option value="date_desc"{% if sort == "date_desc" %} selected{% endif %}>Newest First</option>
+            <option value="date_asc"{% if sort == "date_asc" %} selected{% endif %}>Oldest First</option>
+            <option value="username_asc"{% if sort == "username_asc" %} selected{% endif %}>Username (A–Z)</option>
+          </select>
+          <button type="submit" class="btn btn-secondary btn-sm" aria-label="Search">
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div id="admin-user-results-container">
+      {% include "admin_panel/partials/user_table_rows.html" %}
+    </div>
+  </div>
+
+  <!-- Table Quick Action Lock Modal -->
+  <div
+    id="table-lock-modal"
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="table-lock-modal-title"
+  >
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="table-lock-modal-title" class="modal-title">Lock User Account</h2>
+        <button
+          type="button"
+          class="alert-close"
+          aria-label="Close modal"
+          data-admin-modal-close="table-lock-modal"
+        >
+          &times;
+        </button>
+      </div>
+      <form id="table-lock-form" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p style="margin-top: 0;">
+            Locking <strong id="table-lock-username"></strong> will immediately revoke all active
+            sessions and prevent future logins until unlocked.
+          </p>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="table-lock-reason" class="form-label">Reason (Optional)</label>
+            <input
+              type="text"
+              id="table-lock-reason"
+              name="reason"
+              maxlength="255"
+              class="form-control"
+              placeholder="e.g. Policy violation or suspicious activity"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-admin-modal-close="table-lock-modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-danger">Confirm Lock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table Quick Action Unlock Modal -->
+  <div
+    id="table-unlock-modal"
+    class="modal-backdrop"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    aria-labelledby="table-unlock-modal-title"
+  >
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="table-unlock-modal-title" class="modal-title">Unlock User Account</h2>
+        <button
+          type="button"
+          class="alert-close"
+          aria-label="Close modal"
+          data-admin-modal-close="table-unlock-modal"
+        >
+          &times;
+        </button>
+      </div>
+      <form id="table-unlock-form" method="post" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <p style="margin: 0;">
+            Restore <strong id="table-unlock-username"></strong> to Active status? The user will
+            be able to log in again immediately.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-admin-modal-close="table-unlock-modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Confirm Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+{% endblock %}

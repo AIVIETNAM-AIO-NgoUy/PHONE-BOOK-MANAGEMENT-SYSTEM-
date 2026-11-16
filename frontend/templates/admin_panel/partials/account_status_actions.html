@@ -1,0 +1,44 @@
+<div id="account-status-actions-panel">
+  {% if status_message %}
+    <div class="alert alert-success" role="alert" style="margin-bottom: 1rem;">
+      <span>{{ status_message }}</span>
+    </div>
+  {% endif %}
+
+  <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+      <span style="font-weight: 600; color: var(--color-text-muted);">Account Status:</span>
+      {% if target_user.account_status == "Active" %}
+        <span class="badge badge-success">Active</span>
+      {% else %}
+        <span class="badge badge-danger">Locked</span>
+      {% endif %}
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      {% if target_user.account_status == "Active" %}
+        {% if target_user.pk != request.user.pk %}
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            data-admin-modal-open="lock-account-modal"
+          >
+            Lock Account
+          </button>
+        {% else %}
+          <span style="font-size: 0.8125rem; color: var(--color-text-muted);">
+            Current administrator session (self-lock disabled)
+          </span>
+        {% endif %}
+      {% else %}
+        <button
+          type="button"
+          class="btn btn-primary btn-sm"
+          data-admin-modal-open="unlock-account-modal"
+        >
+          Unlock Account
+        </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
