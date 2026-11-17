@@ -1,0 +1,391 @@
+{% extends "base.html" %}
+
+{% block title %}
+  {% if is_edit %}Edit {{ contact.full_name }}{% else %}New Contact{% endif %} — Phone Book Management System
+{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <a
+        href="{% if is_edit %}{% url 'contacts:detail' contact.pk %}{% else %}{% url 'contacts:list' %}{% endif %}"
+        style="font-size: 0.875rem; font-weight: 600;"
+      >
+        &larr; {% if is_edit %}Back to Contact{% else %}Back to Contacts{% endif %}
+      </a>
+      <h1 class="page-title" style="margin-top: 0.35rem;">
+        {% if is_edit %}Edit Contact{% else %}New Contact{% endif %}
+      </h1>
+      <p class="page-subtitle">
+        {% if is_edit %}
+          Update contact attributes and manage labeled phone numbers.
+        {% else %}
+          Add a new contact to your private directory with at least one primary phone number.
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Placeholder for Phase 6 HTMX soft duplicate warning -->
+  <div id="duplicate-warning-container" aria-live="polite" style="margin-bottom: 1rem;"></div>
+
+  <div class="card form-card-wide">
+    <div class="card-body">
+      {% if form.non_field_errors or phone_formset.non_form_errors %}
+        <div class="alert alert-danger" role="alert" style="margin-bottom: 1.25rem;">
+          <div>
+            {% for error in form.non_field_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+            {% for error in phone_formset.non_form_errors %}
+              <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <form
+        id="contact-lifecycle-form"
+        method="post"
+        action="{% if is_edit %}{% url 'contacts:edit' contact.pk %}{% else %}{% url 'contacts:create' %}{% endif %}"
+        enctype="multipart/form-data"
+        novalidate
+      >
+        {% csrf_token %}
+        {% if is_edit %}
+          <input type="hidden" name="exclude_contact_id" value="{{ contact.pk }}" />
+        {% endif %}
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}" class="form-label">
+              Full Name <span style="color: var(--color-danger);">*</span>
+            </label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <div class="form-error">{{ form.full_name.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="form-error">{{ form.email.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <fieldset class="phone-fieldset">
+          <div class="phone-fieldset-header">
+            <div>
+              <legend class="form-label" style="margin: 0;">
+                Phone Numbers <span style="color: var(--color-danger);">*</span>
+              </legend>
+              <div class="form-help" style="margin-top: 0.15rem;">
+                Enter 8–20 digits (Vietnamese or E.164 format) and select exactly one primary number.
+              </div>
+            </div>
+            <button type="button" id="add-phone-row-btn" class="btn btn-secondary btn-sm">
+              + Add Phone Number
+            </button>
+          </div>
+
+          {{ phone_formset.management_form }}
+
+          <div id="phone-rows-container" class="phone-rows-container">
+            {% for phone_form in phone_formset %}
+              <div class="phone-form-row" data-phone-row{% if phone_form.DELETE.value %} style="display: none;" data-deleted="true"{% endif %}>
+                {{ phone_form.id }}
+                {{ phone_form.contact }}
+                <div class="phone-row-fields">
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="{{ phone_form.phone_number.id_for_label }}">
+                      Number
+                    </label>
+                    {{ phone_form.phone_number }}
+                    {% if phone_form.phone_number.errors %}
+                      <div class="form-error">{{ phone_form.phone_number.errors|join:" " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" for="{{ phone_form.phone_type.id_for_label }}">
+                      Label
+                    </label>
+                    {{ phone_form.phone_type }}
+                    {% if phone_form.phone_type.errors %}
+                      <div class="form-error">{{ phone_form.phone_type.errors|join:" " }}</div>
+                    {% endif %}
+                  </div>
+
+                  <div class="phone-row-controls">
+                    <label class="primary-radio-label">
+                      <input
+                        type="radio"
+                        name="primary_phone_radio"
+                        class="primary-phone-radio"
+                        {% if phone_form.is_primary.value and not phone_form.DELETE.value %}checked{% endif %}
+                      />
+                      <span>Primary</span>
+                    </label>
+                    <span class="sr-only-checkbox" style="display: none;">
+                      {{ phone_form.is_primary }}
+                      {{ phone_form.DELETE }}
+                    </span>
+                    <button
+                      type="button"
+                      class="btn btn-danger btn-sm remove-phone-row-btn"
+                      aria-label="Remove phone number"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </fieldset>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="{{ form.address.id_for_label }}" class="form-label">Residential Address</label>
+            {{ form.address }}
+            {% if form.address.errors %}
+              <div class="form-error">{{ form.address.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.work_address.id_for_label }}" class="form-label">Work Address</label>
+            {{ form.work_address }}
+            {% if form.work_address.errors %}
+              <div class="form-error">{{ form.work_address.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="{{ form.birthday.id_for_label }}" class="form-label">Birthday</label>
+            {{ form.birthday }}
+            {% if form.birthday.errors %}
+              <div class="form-error">{{ form.birthday.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.avatar.id_for_label }}" class="form-label">
+              Contact Avatar (Optional)
+            </label>
+            {{ form.avatar }}
+            {% if form.avatar.errors %}
+              <div class="form-error">{{ form.avatar.errors|join:" " }}</div>
+            {% else %}
+              <div class="form-help">Accepted formats: PNG, JPG, WEBP (max 2MB).</div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if form.fields.group_ids.queryset.exists or form.group_ids.errors %}
+          <div class="form-group">
+            <label class="form-label">Groups</label>
+            <input type="hidden" name="_groups_submitted" value="1" />
+            {% if form.fields.group_ids.queryset.exists %}
+              <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">
+                {% for checkbox in form.group_ids %}
+                  <label style="display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+                    {{ checkbox.tag }}
+                    <span>{{ checkbox.choice_label }}</span>
+                  </label>
+                {% endfor %}
+              </div>
+            {% endif %}
+            {% if form.group_ids.errors %}
+              <div class="form-error">{{ form.group_ids.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        <div class="form-group">
+          <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+            <div class="form-error">{{ form.notes.errors|join:" " }}</div>
+          {% endif %}
+        </div>
+
+        <div class="form-actions-row">
+          <button type="submit" class="btn btn-primary">
+            {% if is_edit %}Save Changes{% else %}Create Contact{% endif %}
+          </button>
+          <a
+            href="{% if is_edit %}{% url 'contacts:detail' contact.pk %}{% else %}{% url 'contacts:list' %}{% endif %}"
+            class="btn btn-secondary"
+          >
+            Cancel
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <template id="empty-phone-row-template">
+    <div class="phone-form-row" data-phone-row>
+      {{ phone_formset.empty_form.id }}
+      {{ phone_formset.empty_form.contact }}
+      <div class="phone-row-fields">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="{{ phone_formset.empty_form.phone_number.id_for_label }}">
+            Number
+          </label>
+          {{ phone_formset.empty_form.phone_number }}
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" for="{{ phone_formset.empty_form.phone_type.id_for_label }}">
+            Label
+          </label>
+          {{ phone_formset.empty_form.phone_type }}
+        </div>
+        <div class="phone-row-controls">
+          <label class="primary-radio-label">
+            <input type="radio" name="primary_phone_radio" class="primary-phone-radio" />
+            <span>Primary</span>
+          </label>
+          <span class="sr-only-checkbox" style="display: none;">
+            {{ phone_formset.empty_form.is_primary }}
+            {{ phone_formset.empty_form.DELETE }}
+          </span>
+          <button
+            type="button"
+            class="btn btn-danger btn-sm remove-phone-row-btn"
+            aria-label="Remove phone number"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <div id="merge-modal-container" aria-live="polite"></div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      const container = document.getElementById("phone-rows-container");
+      const addBtn = document.getElementById("add-phone-row-btn");
+      const totalFormsInput = document.getElementById("id_phone_numbers-TOTAL_FORMS");
+      const emptyTemplate = document.getElementById("empty-phone-row-template");
+      const formEl = document.getElementById("contact-lifecycle-form");
+
+      function isRowDeleted(row) {
+        if (row.getAttribute("data-deleted") === "true" || row.style.display === "none") {
+          return true;
+        }
+        const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+        return Boolean(deleteCheckbox && deleteCheckbox.checked);
+      }
+
+      function getVisibleRows() {
+        return Array.from(container.querySelectorAll("[data-phone-row]")).filter(
+          (row) => !isRowDeleted(row)
+        );
+      }
+
+      function syncPrimaryCheckboxes() {
+        const visibleRows = getVisibleRows();
+        if (visibleRows.length === 0) return;
+
+        let checkedRadio = visibleRows.find((row) => {
+          const radio = row.querySelector(".primary-phone-radio");
+          return radio && radio.checked;
+        });
+
+        if (!checkedRadio) {
+          checkedRadio = visibleRows[0];
+          const firstRadio = checkedRadio.querySelector(".primary-phone-radio");
+          if (firstRadio) firstRadio.checked = true;
+        }
+
+        container.querySelectorAll("[data-phone-row]").forEach((row) => {
+          const radio = row.querySelector(".primary-phone-radio");
+          const checkbox = row.querySelector(".phone-primary-checkbox");
+          const isVisible = !isRowDeleted(row);
+          if (!isVisible && radio) {
+            radio.checked = false;
+          }
+          if (checkbox) {
+            checkbox.checked = Boolean(isVisible && radio && radio.checked);
+          }
+        });
+      }
+
+      function bindRowEvents(row) {
+        const radio = row.querySelector(".primary-phone-radio");
+        if (radio) {
+          radio.addEventListener("change", syncPrimaryCheckboxes);
+        }
+
+        const removeBtn = row.querySelector(".remove-phone-row-btn");
+        if (removeBtn) {
+          removeBtn.addEventListener("click", function () {
+            const visibleRows = getVisibleRows();
+            if (visibleRows.length <= 1) {
+              return;
+            }
+            const deleteCheckbox = row.querySelector('input[type="checkbox"][name$="-DELETE"]');
+            if (deleteCheckbox) {
+              deleteCheckbox.checked = true;
+            }
+            const primaryRadio = row.querySelector(".primary-phone-radio");
+            if (primaryRadio) {
+              primaryRadio.checked = false;
+            }
+            const primaryCheckbox = row.querySelector(".phone-primary-checkbox");
+            if (primaryCheckbox) {
+              primaryCheckbox.checked = false;
+            }
+            row.setAttribute("data-deleted", "true");
+            row.style.display = "none";
+            syncPrimaryCheckboxes();
+          });
+        }
+      }
+
+      container.querySelectorAll("[data-phone-row]").forEach(bindRowEvents);
+      syncPrimaryCheckboxes();
+
+      if (addBtn && emptyTemplate && totalFormsInput) {
+        addBtn.addEventListener("click", function () {
+          const nextIdx = parseInt(totalFormsInput.value, 10);
+          const html = emptyTemplate.innerHTML.replace(/__prefix__/g, String(nextIdx));
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = html.trim();
+          const newRow = wrapper.firstElementChild;
+          container.appendChild(newRow);
+          totalFormsInput.value = String(nextIdx + 1);
+          bindRowEvents(newRow);
+          syncPrimaryCheckboxes();
+          if (window.htmx) {
+            window.htmx.process(newRow);
+          }
+        });
+      }
+
+      if (formEl) {
+        formEl.addEventListener("submit", syncPrimaryCheckboxes);
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          const mergeContainer = document.getElementById("merge-modal-container");
+          if (mergeContainer) {
+            mergeContainer.innerHTML = "";
+          }
+        }
+      });
+    })();
+  </script>
+{% endblock %}
