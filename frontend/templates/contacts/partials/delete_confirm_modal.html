@@ -1,0 +1,42 @@
+<!-- Single Contact Deletion Confirmation Modal Partial (T042) -->
+<div
+  id="single-delete-modal"
+  class="modal-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="true"
+  aria-labelledby="single-delete-modal-title"
+>
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h2 id="single-delete-modal-title" class="modal-title">Delete Contact</h2>
+      <button
+        type="button"
+        class="alert-close"
+        aria-label="Close modal"
+        data-contact-modal-close="single-delete-modal"
+      >
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <p id="single-delete-modal-message">
+        Are you sure you want to permanently delete this contact? This action cannot be undone.
+      </p>
+    </div>
+    <div class="modal-footer">
+      <button
+        type="button"
+        class="btn btn-secondary"
+        data-contact-modal-close="single-delete-modal"
+      >
+        Cancel
+      </button>
+      <form id="single-delete-modal-form" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="confirm" value="true" />
+        <button type="submit" class="btn btn-danger">Confirm Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
