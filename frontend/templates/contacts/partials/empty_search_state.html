@@ -1,0 +1,7 @@
+<div id="empty-search-state" class="card-body empty-search-state">
+  <h2 class="empty-search-title">No matching contacts found</h2>
+  <p class="empty-search-message">
+    No contacts matched "<strong>{{ search_query }}</strong>" across names, phone numbers, or email addresses.
+  </p>
+  <a href="{% url 'contacts:list' %}" class="btn btn-secondary">Clear Search</a>
+</div>
