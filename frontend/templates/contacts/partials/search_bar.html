@@ -1,0 +1,108 @@
+<form
+  method="get"
+  action="{% url 'contacts:search' %}"
+  class="search-toolbar"
+  role="search"
+  aria-label="Search and sort contacts"
+>
+  <div class="search-input-group">
+    <label for="contact-search-input" class="sr-only">Search contacts</label>
+    <input
+      type="search"
+      id="contact-search-input"
+      name="q"
+      value="{{ search_query|default:'' }}"
+      class="form-control search-input"
+      placeholder="Search by name, phone, or email..."
+      aria-label="Search contacts by name, phone, or email"
+      autocomplete="off"
+      hx-get="{% url 'contacts:search' %}"
+      hx-trigger="keyup changed delay:300ms, search"
+      hx-target="#contact-results-container"
+      hx-swap="innerHTML"
+      hx-include="#sort-select, #group-filter-select"
+    />
+    <a
+      id="contact-search-clear-btn"
+      href="{% url 'contacts:list' %}"
+      class="btn btn-secondary btn-sm"
+      {% if not search_query and not has_group_filter %}style="display: none;"{% endif %}
+    >Clear</a>
+  </div>
+
+  <div class="search-filters-row">
+    {% if groups %}
+      <div class="sort-control-group">
+        <label for="group-filter-select" class="form-label" style="margin: 0; font-size: 0.8125rem; white-space: nowrap;">
+          Group:
+        </label>
+        <select
+          id="group-filter-select"
+          name="group"
+          class="form-control filter-select"
+          hx-get="{% url 'contacts:search' %}"
+          hx-trigger="change"
+          hx-target="#contact-results-container"
+          hx-swap="innerHTML"
+          hx-include="#contact-search-input, #sort-select"
+        >
+          <option value="">All Groups</option>
+          {% for group_opt in groups %}
+            <option value="{{ group_opt.pk }}" {% if selected_group and selected_group.pk == group_opt.pk %}selected{% endif %}>
+              {{ group_opt.group_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
+    <div class="sort-control-group">
+      <label for="sort-select" class="form-label" style="margin: 0; font-size: 0.8125rem; white-space: nowrap;">
+        Sort by:
+      </label>
+      <select
+        id="sort-select"
+        name="sort"
+        class="form-control filter-select"
+        hx-get="{% url 'contacts:search' %}"
+        hx-trigger="change"
+        hx-target="#contact-results-container"
+        hx-swap="innerHTML"
+        hx-include="#contact-search-input, #group-filter-select"
+      >
+        <option value="name_asc" {% if current_sort == "name_asc" %}selected{% endif %}>
+          Name (A–Z)
+        </option>
+        <option value="name_desc" {% if current_sort == "name_desc" %}selected{% endif %}>
+          Name (Z–A)
+        </option>
+        <option value="recent" {% if current_sort == "recent" %}selected{% endif %}>
+          Recently Updated
+        </option>
+      </select>
+    </div>
+  </div>
+</form>
+<script>
+  (function () {
+    const searchInput = document.getElementById("contact-search-input");
+    const groupSelect = document.getElementById("group-filter-select");
+    const clearBtn = document.getElementById("contact-search-clear-btn");
+    if (!clearBtn) return;
+
+    function syncClearButtonVisibility() {
+      const hasQuery = Boolean(searchInput && searchInput.value.trim().length > 0);
+      const hasGroup = Boolean(groupSelect && groupSelect.value !== "");
+      clearBtn.style.display = hasQuery || hasGroup ? "" : "none";
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener("input", syncClearButtonVisibility);
+      searchInput.addEventListener("search", syncClearButtonVisibility);
+    }
+    if (groupSelect) {
+      groupSelect.addEventListener("change", syncClearButtonVisibility);
+    }
+    syncClearButtonVisibility();
+  })();
+</script>

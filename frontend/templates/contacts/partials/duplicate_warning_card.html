@@ -1,0 +1,76 @@
+<div
+  class="alert alert-warning duplicate-warning-card"
+  role="region"
+  aria-label="Potential duplicate contacts"
+>
+  <div style="width: 100%;">
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.65rem;">
+      <div>
+        <strong style="font-size: 0.95rem;">Potential Duplicate Contact Detected</strong>
+        <p style="margin: 0.15rem 0 0; font-size: 0.85rem;">
+          A contact with a matching name or phone number already exists in your directory.
+        </p>
+      </div>
+      <button
+        type="button"
+        class="btn btn-secondary btn-sm"
+        onclick="document.getElementById('duplicate-warning-container').innerHTML = '';"
+      >
+        Proceed Anyway
+      </button>
+    </div>
+
+    <div class="duplicate-candidate-list">
+      {% for candidate in candidates %}
+        <div class="duplicate-candidate-row">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <strong>{{ candidate.contact.full_name }}</strong>
+              <span class="badge badge-warning">{{ candidate.reason_label }}</span>
+            </div>
+            <div style="font-size: 0.85rem; margin-top: 0.2rem; color: var(--color-text-muted);">
+              {% if candidate.primary_phone %}
+                Primary Phone:
+                <span style="font-family: var(--font-mono); color: var(--color-text);">
+                  {{ candidate.primary_phone.phone_number }}
+                </span>
+              {% else %}
+                {% with first_phone=candidate.contact.phone_numbers.first %}
+                  {% if first_phone %}
+                    Phone:
+                    <span style="font-family: var(--font-mono); color: var(--color-text);">
+                      {{ first_phone.phone_number }}
+                    </span>
+                  {% endif %}
+                {% endwith %}
+              {% endif %}
+              {% if candidate.contact.email %}
+                &middot; {{ candidate.contact.email }}
+              {% endif %}
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <a
+              href="{% url 'contacts:detail' candidate.contact.pk %}"
+              class="btn btn-secondary btn-sm"
+            >
+              View Existing
+            </a>
+            {% if exclude_contact_id %}
+              <button
+                type="button"
+                class="btn btn-primary btn-sm"
+                hx-get="{% url 'contacts:merge' %}?target_contact_id={{ candidate.contact.pk }}&source_contact_id={{ exclude_contact_id }}"
+                hx-target="#merge-modal-container"
+                hx-swap="innerHTML"
+              >
+                Smart Merge
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>

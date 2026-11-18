@@ -1,0 +1,462 @@
+<div class="auth-stage">
+  <div
+    class="auth-card{% if auth_mode == 'register' %} is-register{% endif %}"
+    data-auth-card
+    data-auth-mode="{{ auth_mode|default:'login' }}"
+  >
+    <!-- Sign In Form Panel (Right half on desktop when Login active) -->
+    <section
+      class="auth-panel auth-panel-login"
+      aria-label="Sign In Form"
+      data-auth-panel="login"
+      {% if auth_mode == 'register' %}aria-hidden="true" inert{% else %}aria-hidden="false"{% endif %}
+    >
+      <div class="auth-panel-inner">
+        <div class="auth-form-header">
+          <h1 class="auth-form-title">Sign In</h1>
+          <p class="auth-form-subtitle">
+            Enter your username or email to open your contact workspace.
+          </p>
+        </div>
+
+        {% if login_form.non_field_errors %}
+          <div class="alert alert-danger auth-nonfield-alert" role="alert">
+            <div>
+              {% for error in login_form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:login' %}" class="auth-form" novalidate>
+          {% csrf_token %}
+          {% if next %}
+            <input type="hidden" name="next" value="{{ next }}" />
+          {% endif %}
+
+          <div class="form-group">
+            <label for="{{ login_form.username_or_email.id_for_label }}" class="form-label">
+              Username or Email
+            </label>
+            {{ login_form.username_or_email }}
+            {% if login_form.username_or_email.errors %}
+              <div class="form-error">{{ login_form.username_or_email.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ login_form.password.id_for_label }}" class="form-label">Password</label>
+            {{ login_form.password }}
+            {% if login_form.password.errors %}
+              <div class="form-error">{{ login_form.password.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="auth-checkbox-row">
+            {{ login_form.remember_me }}
+            <label for="{{ login_form.remember_me.id_for_label }}" class="auth-checkbox-label">
+              Remember me for 14 days
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit-btn">Sign In</button>
+        </form>
+
+        <div class="auth-form-footer">
+          <span>New to PhoneBook?</span>
+          <a
+            href="{% url 'accounts:register' %}"
+            class="auth-footer-link"
+            data-auth-switch="register"
+          >
+            Create an account
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Registration Form Panel (Left half on desktop when Register active) -->
+    <section
+      class="auth-panel auth-panel-register"
+      aria-label="Registration Form"
+      data-auth-panel="register"
+      {% if auth_mode != 'register' %}aria-hidden="true" inert{% else %}aria-hidden="false"{% endif %}
+    >
+      <div class="auth-panel-inner auth-panel-inner-wide">
+        <div class="auth-form-header auth-form-header-compact">
+          <h1 class="auth-form-title">Create Your Account</h1>
+          <p class="auth-form-subtitle">
+            Set up your profile to unlock your personal contact directory.
+          </p>
+        </div>
+
+        {% if register_form.non_field_errors %}
+          <div class="alert alert-danger auth-nonfield-alert" role="alert">
+            <div>
+              {% for error in register_form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'accounts:register' %}" class="auth-form" novalidate>
+          {% csrf_token %}
+
+          <div class="auth-form-grid">
+            <div class="form-group">
+              <label for="{{ register_form.username.id_for_label }}" class="form-label">
+                Username
+              </label>
+              {{ register_form.username }}
+              {% if register_form.username.errors %}
+                <div class="form-error">{{ register_form.username.errors|join:" " }}</div>
+              {% else %}
+                <div class="form-help">3–50 chars: letters, numbers, _.</div>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ register_form.full_name.id_for_label }}" class="form-label">
+                Full Name
+              </label>
+              {{ register_form.full_name }}
+              {% if register_form.full_name.errors %}
+                <div class="form-error">{{ register_form.full_name.errors|join:" " }}</div>
+              {% endif %}
+            </div>
+
+            <div class="form-group auth-field-full">
+              <label for="{{ register_form.email.id_for_label }}" class="form-label">
+                Email Address
+              </label>
+              {{ register_form.email }}
+              {% if register_form.email.errors %}
+                <div class="form-error">{{ register_form.email.errors|join:" " }}</div>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ register_form.password.id_for_label }}" class="form-label">
+                Password
+              </label>
+              {{ register_form.password }}
+              {% if register_form.password.errors %}
+                <div class="form-error">{{ register_form.password.errors|join:" " }}</div>
+              {% else %}
+                <div class="form-help">8+ chars, letters &amp; numbers.</div>
+              {% endif %}
+            </div>
+
+            <div class="form-group">
+              <label for="{{ register_form.password_confirm.id_for_label }}" class="form-label">
+                Confirm Password
+              </label>
+              {{ register_form.password_confirm }}
+              {% if register_form.password_confirm.errors %}
+                <div class="form-error">{{ register_form.password_confirm.errors|join:" " }}</div>
+              {% endif %}
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit-btn">Create Account</button>
+        </form>
+
+        <div class="auth-form-footer">
+          <span>Already have an account?</span>
+          <a
+            href="{% url 'accounts:login' %}"
+            class="auth-footer-link"
+            data-auth-switch="login"
+          >
+            Sign in
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Sliding Showcase Overlay -->
+    <div class="auth-overlay-container">
+      <div class="auth-overlay">
+        <!-- Register Banner (Visible on Right half when Register is active) -->
+        <aside
+          class="auth-banner auth-banner-register"
+          aria-label="PhoneBook Onboarding Highlights"
+          data-auth-banner="register"
+          {% if auth_mode != 'register' %}aria-hidden="true" inert{% else %}aria-hidden="false"{% endif %}
+        >
+          <svg
+            class="auth-banner-pattern"
+            viewBox="0 0 600 600"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <circle
+              cx="490"
+              cy="100"
+              r="170"
+              stroke="currentColor"
+              stroke-opacity="0.14"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="490"
+              cy="100"
+              r="105"
+              stroke="currentColor"
+              stroke-opacity="0.1"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="110"
+              cy="500"
+              r="140"
+              stroke="currentColor"
+              stroke-opacity="0.1"
+              stroke-width="1.5"
+            />
+            <path
+              d="M0 370C140 320 260 410 420 350C500 320 560 280 600 250"
+              stroke="currentColor"
+              stroke-opacity="0.12"
+              stroke-width="1.5"
+            />
+          </svg>
+
+          <div class="auth-banner-content">
+            <div class="auth-banner-top">
+              <div class="auth-brand">
+                <span class="brand-mark brand-mark-inverse" aria-hidden="true">PB</span>
+                <span class="auth-brand-name">PhoneBook</span>
+              </div>
+
+              <div class="auth-banner-copy">
+                <h2 class="auth-banner-title">Start organizing your network today</h2>
+                <p class="auth-banner-subtitle">
+                  Create a private contact workspace built to keep every number, note, and group
+                  cleanly structured from day one.
+                </p>
+              </div>
+            </div>
+
+            <ul class="auth-feature-list">
+              <li class="auth-feature-item">
+                <span class="auth-feature-icon" aria-hidden="true">
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </span>
+                <div>
+                  <div class="auth-feature-heading">Dedicated Contact Book</div>
+                  <div class="auth-feature-desc">
+                    Your own isolated directory with Argon2-protected account access.
+                  </div>
+                </div>
+              </li>
+
+              <li class="auth-feature-item">
+                <span class="auth-feature-icon" aria-hidden="true">
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <polyline points="9 12 11 14 15 10" />
+                  </svg>
+                </span>
+                <div>
+                  <div class="auth-feature-heading">Smart Duplicate Protection</div>
+                  <div class="auth-feature-desc">
+                    Catch overlapping numbers early and merge records cleanly without loss.
+                  </div>
+                </div>
+              </li>
+
+              <li class="auth-feature-item">
+                <span class="auth-feature-icon" aria-hidden="true">
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path
+                      d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                    />
+                  </svg>
+                </span>
+                <div>
+                  <div class="auth-feature-heading">Multi-Number Contact Profiles</div>
+                  <div class="auth-feature-desc">
+                    Store mobile, work, and home numbers with labeled primary flags.
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </aside>
+
+        <!-- Login Banner (Visible on Left half when Login is active) -->
+        <aside
+          class="auth-banner auth-banner-login"
+          aria-label="PhoneBook Workspace Overview"
+          data-auth-banner="login"
+          {% if auth_mode == 'register' %}aria-hidden="true" inert{% else %}aria-hidden="false"{% endif %}
+        >
+          <svg
+            class="auth-banner-pattern"
+            viewBox="0 0 600 600"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <circle
+              cx="480"
+              cy="110"
+              r="175"
+              stroke="currentColor"
+              stroke-opacity="0.14"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="480"
+              cy="110"
+              r="110"
+              stroke="currentColor"
+              stroke-opacity="0.1"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="110"
+              cy="500"
+              r="145"
+              stroke="currentColor"
+              stroke-opacity="0.1"
+              stroke-width="1.5"
+            />
+            <path
+              d="M0 360C140 310 260 410 420 350C500 320 560 280 600 250"
+              stroke="currentColor"
+              stroke-opacity="0.12"
+              stroke-width="1.5"
+            />
+          </svg>
+
+          <div class="auth-banner-content">
+            <div class="auth-banner-top">
+              <div class="auth-brand">
+                <span class="brand-mark brand-mark-inverse" aria-hidden="true">PB</span>
+                <span class="auth-brand-name">PhoneBook</span>
+              </div>
+
+              <div class="auth-banner-copy">
+                <h2 class="auth-banner-title">Welcome back to PhoneBook</h2>
+                <p class="auth-banner-subtitle">
+                  Pick up right where you left off with fast directory lookup, pinned favorites, and
+                  organized contact groups.
+                </p>
+              </div>
+            </div>
+
+            <ul class="auth-feature-list">
+              <li class="auth-feature-item">
+                <span class="auth-feature-icon" aria-hidden="true">
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </span>
+                <div>
+                  <div class="auth-feature-heading">Instant Trigram Search</div>
+                  <div class="auth-feature-desc">
+                    Filter contacts in real time by name, phone number, email, or address.
+                  </div>
+                </div>
+              </li>
+
+              <li class="auth-feature-item">
+                <span class="auth-feature-icon" aria-hidden="true">
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <polygon
+                      points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
+                    />
+                  </svg>
+                </span>
+                <div>
+                  <div class="auth-feature-heading">Priority Favorites &amp; Groups</div>
+                  <div class="auth-feature-desc">
+                    Keep key contacts pinned and manage family or team circles effortlessly.
+                  </div>
+                </div>
+              </li>
+
+              <li class="auth-feature-item">
+                <span class="auth-feature-icon" aria-hidden="true">
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.9"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                </span>
+                <div>
+                  <div class="auth-feature-heading">Private Workspace Isolation</div>
+                  <div class="auth-feature-desc">
+                    Your records, interactions, and profile remain strictly scoped to your session.
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>

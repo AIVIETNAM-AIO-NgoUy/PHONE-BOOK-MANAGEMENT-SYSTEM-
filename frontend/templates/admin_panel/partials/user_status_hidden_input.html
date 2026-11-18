@@ -1,0 +1,7 @@
+<input
+  type="hidden"
+  id="admin-status-hidden-input"
+  name="status"
+  value="{{ status_filter }}"
+  {% if oob %}hx-swap-oob="true"{% endif %}
+/>

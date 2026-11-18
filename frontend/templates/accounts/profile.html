@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-subtitle">View and manage your personal identity and security settings.</p>
+    </div>
+    <a href="{% url 'accounts:password_change' %}" class="btn btn-secondary">
+      <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+      </svg>
+      Change Password
+    </a>
+  </div>
+
+  <div class="profile-page-grid">
+    <div id="profile-card-container">
+      {% include "accounts/partials/profile_card.html" with user=request.user %}
+    </div>
+
+    <div class="card profile-edit-card">
+      <div class="card-header">
+        <h2 class="card-title">Update Profile Information</h2>
+      </div>
+      <div class="card-body">
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger alert-spaced" role="alert">
+            <div>
+              {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+
+        <form
+          method="post"
+          action="{% url 'accounts:profile' %}"
+          enctype="multipart/form-data"
+          novalidate
+        >
+          {% csrf_token %}
+
+          <div class="form-group">
+            <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name</label>
+            {{ form.full_name }}
+            {% if form.full_name.errors %}
+              <div class="form-error">{{ form.full_name.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+            {{ form.email }}
+            {% if form.email.errors %}
+              <div class="form-error">{{ form.email.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="{{ form.avatar.id_for_label }}" class="form-label">
+              Profile Avatar (Optional)
+            </label>
+            {{ form.avatar }}
+            {% if form.avatar.errors %}
+              <div class="form-error">{{ form.avatar.errors|join:" " }}</div>
+            {% else %}
+              <div class="form-help">Accepted formats: PNG, JPG, WEBP (max 2MB).</div>
+            {% endif %}
+          </div>
+
+          <div class="form-actions-row">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+{% endblock %}

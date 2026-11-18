@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}404 Not Found — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <section class="card error-state">
+    <div class="card-body">
+      <span class="error-code">404 Not Found</span>
+      <h1 class="error-title">Page Not Found</h1>
+      <p class="error-message">
+        The page or contact record you are looking for could not be found or may have been removed.
+      </p>
+      <a href="/" class="btn btn-primary">Return Home</a>
+    </div>
+  </section>
+{% endblock %}

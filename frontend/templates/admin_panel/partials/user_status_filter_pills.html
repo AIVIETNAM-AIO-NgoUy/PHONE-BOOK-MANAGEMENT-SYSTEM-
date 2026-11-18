@@ -1,0 +1,35 @@
+<div
+  id="admin-status-filter-pills"
+  class="status-filter-pills"
+  role="group"
+  aria-label="Filter by account status"
+  {% if oob %}hx-swap-oob="true"{% endif %}
+>
+  <a
+    href="{% url 'admin_panel:user_list' %}?status=all{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if sort %}&sort={{ sort|urlencode }}{% endif %}"
+    class="filter-pill{% if status_filter == 'all' %} is-active{% endif %}"
+    hx-get="{% url 'admin_panel:user_list' %}?status=all{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if sort %}&sort={{ sort|urlencode }}{% endif %}"
+    hx-target="#admin-user-results-container"
+    hx-push-url="true"
+  >
+    All
+  </a>
+  <a
+    href="{% url 'admin_panel:user_list' %}?status=Active{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if sort %}&sort={{ sort|urlencode }}{% endif %}"
+    class="filter-pill{% if status_filter == 'Active' %} is-active{% endif %}"
+    hx-get="{% url 'admin_panel:user_list' %}?status=Active{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if sort %}&sort={{ sort|urlencode }}{% endif %}"
+    hx-target="#admin-user-results-container"
+    hx-push-url="true"
+  >
+    Active
+  </a>
+  <a
+    href="{% url 'admin_panel:user_list' %}?status=Locked{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if sort %}&sort={{ sort|urlencode }}{% endif %}"
+    class="filter-pill{% if status_filter == 'Locked' %} is-active{% endif %}"
+    hx-get="{% url 'admin_panel:user_list' %}?status=Locked{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if sort %}&sort={{ sort|urlencode }}{% endif %}"
+    hx-target="#admin-user-results-container"
+    hx-push-url="true"
+  >
+    Locked
+  </a>
+</div>

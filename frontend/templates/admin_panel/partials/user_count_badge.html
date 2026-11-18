@@ -1,0 +1,8 @@
+<span
+  id="admin-user-count-badge"
+  class="badge badge-primary"
+  style="vertical-align: middle; margin-left: 0.35rem;"
+  {% if oob %}hx-swap-oob="true"{% endif %}
+>
+  {{ total_matching_count }}
+</span>

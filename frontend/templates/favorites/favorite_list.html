@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Favorites — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        Favorites
+        <span id="favorites-count-badge" class="badge badge-primary" style="vertical-align: middle; margin-left: 0.35rem;">
+          {{ total_favorites_count }}
+        </span>
+      </h1>
+      <p class="page-subtitle">
+        Quick access to your prioritized and most frequently contacted connections.
+      </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'contacts:list' %}" class="btn btn-secondary">All Contacts</a>
+    </div>
+  </div>
+
+  {% if favorite_items %}
+    <div class="card">
+      <div class="card-header contact-list-toolbar">
+        <span style="font-size: 0.875rem; color: var(--color-text-muted);">
+          Removing a contact from Favorites keeps the contact in your main directory.
+        </span>
+
+        <div class="sort-control-group" role="group" aria-label="Sort favorites">
+          <span class="form-label" style="margin: 0; font-size: 0.8125rem; white-space: nowrap;">
+            Sort by:
+          </span>
+          <a
+            href="?sort=priority"
+            class="btn btn-sm {% if current_sort == 'priority' %}btn-primary{% else %}btn-secondary{% endif %}"
+          >
+            Priority (1–10)
+          </a>
+          <a
+            href="?sort=frequency"
+            class="btn btn-sm {% if current_sort == 'frequency' %}btn-primary{% else %}btn-secondary{% endif %}"
+          >
+            Frequency
+          </a>
+          <a
+            href="?sort=name"
+            class="btn btn-sm {% if current_sort == 'name' %}btn-primary{% else %}btn-secondary{% endif %}"
+          >
+            Name (A–Z)
+          </a>
+        </div>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="table table-responsive-cards">
+          <thead>
+            <tr>
+              <th>Contact</th>
+              <th>Primary Phone</th>
+              <th>Priority</th>
+              <th>Interactions</th>
+              <th style="text-align: right; white-space: nowrap;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="favorites-table-body">
+            {% for item in favorite_items %}
+              <tr id="favorite-row-{{ item.contact.pk }}">
+                <td data-label="Contact">
+                  <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    {% if item.contact.avatar %}
+                      <img
+                        src="{{ item.contact.avatar }}"
+                        alt="{{ item.contact.full_name }}"
+                        class="contact-avatar-sm"
+                      />
+                    {% else %}
+                      <div class="contact-avatar-placeholder contact-avatar-sm" aria-hidden="true">
+                        {{ item.contact.full_name|slice:":1"|upper }}
+                      </div>
+                    {% endif %}
+                    <div>
+                      <a
+                        href="{% url 'contacts:detail' item.contact.pk %}"
+                        style="font-weight: 600; color: var(--color-text);"
+                      >
+                        {{ item.contact.full_name }}
+                      </a>
+                      {% if item.contact.email %}
+                        <div style="font-size: 0.8125rem; color: var(--color-text-muted);">
+                          {{ item.contact.email }}
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Primary Phone">
+                  {% if item.contact.primary_phone %}
+                    <span style="font-family: var(--font-mono); font-size: 0.875rem;">
+                      {{ item.contact.primary_phone.phone_number }}
+                    </span>
+                    <span class="badge badge-primary" style="margin-left: 0.25rem;">
+                      {{ item.contact.primary_phone.phone_type }}
+                    </span>
+                  {% else %}
+                    <span style="color: var(--color-text-muted);">—</span>
+                  {% endif %}
+                </td>
+                <td data-label="Priority">
+                  {% include "favorites/partials/priority_badge.html" with item=item priority_choices=priority_choices %}
+                </td>
+                <td data-label="Interactions">
+                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <div>
+                      <strong data-interaction-count="{{ item.contact.pk }}">
+                        {{ item.contact.interaction_count }}
+                      </strong>
+                      <div
+                        data-last-contacted="{{ item.contact.pk }}"
+                        style="font-size: 0.75rem; color: var(--color-text-muted);"
+                      >
+                        {% if item.contact.last_contacted_at %}
+                          {{ item.contact.last_contacted_at|date:"Y-m-d H:i" }}
+                        {% else %}
+                          Never contacted
+                        {% endif %}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      class="btn btn-secondary btn-sm"
+                      data-log-interaction
+                      data-interact-url="{% url 'contacts:interact' item.contact.pk %}"
+                      data-contact-id="{{ item.contact.pk }}"
+                    >
+                      Log Call
+                    </button>
+                  </div>
+                </td>
+                <td class="table-actions-cell" data-label="Actions" style="text-align: right; white-space: nowrap;">
+                  <div class="table-actions table-actions-inline" style="flex-wrap: nowrap;">
+                    <a href="{% url 'contacts:detail' item.contact.pk %}" class="btn btn-secondary btn-sm">
+                      View
+                    </a>
+                    <form
+                      method="post"
+                      action="{% url 'favorites:remove' item.contact.pk %}"
+                      hx-post="{% url 'favorites:remove' item.contact.pk %}"
+                      hx-vals='{"mode": "row"}'
+                      hx-target="#favorite-row-{{ item.contact.pk }}"
+                      hx-swap="outerHTML"
+                      style="display: inline;"
+                    >
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-danger btn-sm">
+                        Remove
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="card">
+      <div class="card-body" style="text-align: center; padding: 3rem 1.5rem;">
+        <h2 style="margin: 0 0 0.5rem; font-size: 1.25rem;">No favorite contacts yet</h2>
+        <p style="margin: 0 0 1.5rem; color: var(--color-text-muted);">
+          Star any contact in your directory for instant prioritized access and frequency tracking.
+        </p>
+        <a href="{% url 'contacts:list' %}" class="btn btn-primary">Browse Contacts</a>
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
