@@ -1,0 +1,179 @@
+{% if not inline_page %}
+<div
+  id="smart-merge-modal"
+  class="modal-backdrop is-open"
+  role="dialog"
+  aria-modal="true"
+  aria-hidden="false"
+  aria-labelledby="smart-merge-modal-title"
+>
+  <div class="modal-dialog modal-dialog-wide">
+{% else %}
+<div class="card modal-dialog-wide" style="margin: 0 auto;">
+{% endif %}
+    <div class="modal-header">
+      <div>
+        <h2 id="smart-merge-modal-title" class="modal-title">Smart Merge Preview</h2>
+        <p style="margin: 0.2rem 0 0; font-size: 0.85rem; color: var(--color-text-muted);">
+          Review the consolidated profile below. Non-empty fields on the target contact are preserved; missing details, secondary phones, notes, groups, and favorites are merged without data loss.
+        </p>
+      </div>
+      {% if not inline_page %}
+        <button
+          type="button"
+          class="alert-close"
+          aria-label="Close merge modal"
+          onclick="document.getElementById('merge-modal-container').innerHTML = '';"
+        >
+          &times;
+        </button>
+      {% endif %}
+    </div>
+
+    <div class="modal-body">
+      <div class="merge-comparison-grid">
+        <div class="merge-column">
+          <div class="merge-column-header">
+            <span class="badge badge-success">Target (Kept)</span>
+            <h3 style="margin: 0.35rem 0 0; font-size: 1rem;">{{ preview.target.full_name }}</h3>
+          </div>
+          <dl class="merge-dl">
+            <div><dt>Email</dt><dd>{{ preview.target.email|default:"—" }}</dd></div>
+            <div><dt>Address</dt><dd>{{ preview.target.address|default:"—" }}</dd></div>
+            <div><dt>Work Address</dt><dd>{{ preview.target.work_address|default:"—" }}</dd></div>
+            <div><dt>Birthday</dt><dd>{{ preview.target.birthday|date:"Y-m-d"|default:"—" }}</dd></div>
+            <div>
+              <dt>Phones</dt>
+              <dd>
+                {% for phone in preview.target_phones %}
+                  <div>
+                    <span style="font-family: var(--font-mono);">{{ phone.phone_number }}</span>
+                    <span class="badge badge-primary">{{ phone.phone_type }}</span>
+                    {% if phone.is_primary %}<span class="badge badge-success">Primary</span>{% endif %}
+                  </div>
+                {% empty %}
+                  —
+                {% endfor %}
+              </dd>
+            </div>
+            <div><dt>Notes</dt><dd style="white-space: pre-wrap;">{{ preview.target.notes|default:"—" }}</dd></div>
+          </dl>
+        </div>
+
+        <div class="merge-column">
+          <div class="merge-column-header">
+            <span class="badge badge-danger">Source (Merged &amp; Deleted)</span>
+            <h3 style="margin: 0.35rem 0 0; font-size: 1rem;">{{ preview.source.full_name }}</h3>
+          </div>
+          <dl class="merge-dl">
+            <div><dt>Email</dt><dd>{{ preview.source.email|default:"—" }}</dd></div>
+            <div><dt>Address</dt><dd>{{ preview.source.address|default:"—" }}</dd></div>
+            <div><dt>Work Address</dt><dd>{{ preview.source.work_address|default:"—" }}</dd></div>
+            <div><dt>Birthday</dt><dd>{{ preview.source.birthday|date:"Y-m-d"|default:"—" }}</dd></div>
+            <div>
+              <dt>Phones</dt>
+              <dd>
+                {% for phone in preview.source_phones %}
+                  <div>
+                    <span style="font-family: var(--font-mono);">{{ phone.phone_number }}</span>
+                    <span class="badge badge-primary">{{ phone.phone_type }}</span>
+                    {% if phone.is_primary %}<span class="badge badge-warning">Primary (Demoted)</span>{% endif %}
+                  </div>
+                {% empty %}
+                  —
+                {% endfor %}
+              </dd>
+            </div>
+            <div><dt>Notes</dt><dd style="white-space: pre-wrap;">{{ preview.source.notes|default:"—" }}</dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <div class="merge-consolidated-box">
+        <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Consolidated Result</h3>
+        <dl class="merge-dl">
+          <div><dt>Full Name</dt><dd><strong>{{ preview.consolidated_fields.full_name }}</strong></dd></div>
+          <div><dt>Email</dt><dd>{{ preview.consolidated_fields.email|default:"—" }}</dd></div>
+          <div><dt>Address</dt><dd>{{ preview.consolidated_fields.address|default:"—" }}</dd></div>
+          <div><dt>Work Address</dt><dd>{{ preview.consolidated_fields.work_address|default:"—" }}</dd></div>
+          <div><dt>Birthday</dt><dd>{{ preview.consolidated_fields.birthday|date:"Y-m-d"|default:"—" }}</dd></div>
+          <div><dt>Interactions</dt><dd>{{ preview.consolidated_fields.interaction_count }}</dd></div>
+          <div>
+            <dt>Consolidated Phones</dt>
+            <dd>
+              {% for phone in preview.consolidated_phones %}
+                <div style="margin-bottom: 0.25rem;">
+                  <span style="font-family: var(--font-mono);">{{ phone.phone_number }}</span>
+                  <span class="badge badge-primary">{{ phone.phone_type }}</span>
+                  {% if phone.is_primary %}
+                    <span class="badge badge-success">Primary</span>
+                  {% else %}
+                    <span class="badge badge-primary">Secondary</span>
+                  {% endif %}
+                  {% if phone.origin == "source" %}
+                    <span class="badge badge-warning">Adopted from Source</span>
+                  {% endif %}
+                </div>
+              {% endfor %}
+              {% if preview.discarded_phones %}
+                <div style="font-size: 0.8rem; color: var(--color-text-muted); margin-top: 0.25rem;">
+                  Duplicate numbers discarded:
+                  {% for dp in preview.discarded_phones %}
+                    <span style="font-family: var(--font-mono);">{{ dp.phone_number }}</span>{% if not forloop.last %}, {% endif %}
+                  {% endfor %}
+                </div>
+              {% endif %}
+            </dd>
+          </div>
+          <div>
+            <dt>Consolidated Notes</dt>
+            <dd style="white-space: pre-wrap;">{{ preview.consolidated_fields.notes|default:"—" }}</dd>
+          </div>
+          {% if preview.groups_to_migrate %}
+            <div>
+              <dt>Groups Migrated</dt>
+              <dd>{{ preview.groups_to_migrate|join:", " }}</dd>
+            </div>
+          {% endif %}
+          {% if preview.will_transfer_favorite %}
+            <div>
+              <dt>Favorite Status</dt>
+              <dd>Favorite bookmark will be transferred to target contact.</dd>
+            </div>
+          {% endif %}
+        </dl>
+        {% if preview.notes_truncated %}
+          <p class="form-help" style="color: var(--color-warning); margin-top: 0.5rem;">
+            Combined notes exceed 1,000 characters and will be safely truncated to fit the database limit.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      {% if not inline_page %}
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="document.getElementById('merge-modal-container').innerHTML = '';"
+        >
+          Cancel
+        </button>
+      {% else %}
+        <a href="{% url 'contacts:detail' preview.target.pk %}" class="btn btn-secondary">
+          Cancel
+        </a>
+      {% endif %}
+      <form method="post" action="{% url 'contacts:merge' %}" style="display: inline;">
+        {% csrf_token %}
+        <input type="hidden" name="target_contact_id" value="{{ preview.target.pk }}" />
+        <input type="hidden" name="source_contact_id" value="{{ preview.source.pk }}" />
+        <button type="submit" class="btn btn-primary">Confirm Smart Merge</button>
+      </form>
+    </div>
+{% if not inline_page %}
+  </div>
+</div>
+{% else %}
+</div>
+{% endif %}

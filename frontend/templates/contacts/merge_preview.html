@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Smart Merge Preview — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <a href="{% url 'contacts:detail' preview.target.pk %}" style="font-size: 0.875rem; font-weight: 600;">
+        &larr; Back to {{ preview.target.full_name }}
+      </a>
+      <h1 class="page-title" style="margin-top: 0.35rem;">Confirm Smart Contact Merge</h1>
+    </div>
+  </div>
+
+  {% include "contacts/partials/merge_preview_modal.html" with inline_page=True %}
+{% endblock %}
