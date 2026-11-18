@@ -1,0 +1,69 @@
+<div id="favorite-toggle-{{ contact.pk }}" class="favorite-toggle-wrapper">
+  {% if is_favorite %}
+    <form
+      method="post"
+      action="{% url 'favorites:remove' contact.pk %}"
+      hx-post="{% url 'favorites:remove' contact.pk %}"
+      hx-target="#favorite-toggle-{{ contact.pk }}"
+      hx-swap="outerHTML"
+      style="display: inline;"
+    >
+      {% csrf_token %}
+      {% if show_label %}
+        <input type="hidden" name="show_label" value="1" />
+      {% endif %}
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}" />
+      {% elif request and request.get_full_path %}
+        {% if "/favorites/add/" in request.path or "/favorites/remove/" in request.path %}
+          <input type="hidden" name="next" value="{% url 'contacts:list' %}" />
+        {% else %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+        {% endif %}
+      {% endif %}
+      <button
+        type="submit"
+        class="btn btn-sm btn-favorite-active"
+        aria-pressed="true"
+        aria-label="Remove {{ contact.full_name }} from favorites"
+        title="Remove from favorites"
+      >
+        <span aria-hidden="true">&#9733;</span>
+        {% if show_label %}<span>Favorited</span>{% endif %}
+      </button>
+    </form>
+  {% else %}
+    <form
+      method="post"
+      action="{% url 'favorites:add' contact.pk %}"
+      hx-post="{% url 'favorites:add' contact.pk %}"
+      hx-target="#favorite-toggle-{{ contact.pk }}"
+      hx-swap="outerHTML"
+      style="display: inline;"
+    >
+      {% csrf_token %}
+      {% if show_label %}
+        <input type="hidden" name="show_label" value="1" />
+      {% endif %}
+      {% if next_url %}
+        <input type="hidden" name="next" value="{{ next_url }}" />
+      {% elif request and request.get_full_path %}
+        {% if "/favorites/add/" in request.path or "/favorites/remove/" in request.path %}
+          <input type="hidden" name="next" value="{% url 'contacts:list' %}" />
+        {% else %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}" />
+        {% endif %}
+      {% endif %}
+      <button
+        type="submit"
+        class="btn btn-sm btn-favorite-inactive"
+        aria-pressed="false"
+        aria-label="Add {{ contact.full_name }} to favorites"
+        title="Add to favorites"
+      >
+        <span aria-hidden="true">&#9734;</span>
+        {% if show_label %}<span>Favorite</span>{% endif %}
+      </button>
+    </form>
+  {% endif %}
+</div>

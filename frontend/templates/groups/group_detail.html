@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}{{ group.group_name }} — Groups — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <a href="{% url 'groups:list' %}" style="font-size: 0.875rem; font-weight: 600;">
+        &larr; Back to Groups
+      </a>
+      <h1 class="page-title" style="margin-top: 0.35rem;">
+        {{ group.group_name }}
+        <span
+          id="group-member-count-badge"
+          class="badge badge-primary"
+          style="vertical-align: middle; margin-left: 0.35rem;"
+        >
+          {{ total_members_count }}
+        </span>
+      </h1>
+      {% if group.description %}
+        <p class="page-subtitle">{{ group.description }}</p>
+      {% else %}
+        <p class="page-subtitle">Manage group members without altering base contact records.</p>
+      {% endif %}
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'contacts:list' %}?group={{ group.pk }}" class="btn btn-secondary">
+        Filter Directory
+      </a>
+      <a href="{% url 'groups:edit' group.pk %}" class="btn btn-primary">Edit Group</a>
+      <button
+        type="button"
+        class="btn btn-danger"
+        data-group-delete-trigger
+        data-delete-url="{% url 'groups:delete' group.pk %}"
+        data-group-name="{{ group.group_name }}"
+      >
+        Delete Group
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    {% include "groups/partials/group_member_section.html" %}
+  </div>
+
+  {% include "groups/partials/delete_group_confirm_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      document.querySelectorAll("[data-group-delete-trigger]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const url = btn.getAttribute("data-delete-url");
+          const name = btn.getAttribute("data-group-name") || "this group";
+          const form = document.getElementById("delete-group-modal-form");
+          const msg = document.getElementById("delete-group-modal-message");
+          if (form && url) {
+            form.setAttribute("action", url);
+          }
+          if (msg) {
+            msg.textContent =
+              'Are you sure you want to delete the group "' +
+              name +
+              '"? Associated contacts will NOT be deleted.';
+          }
+          openModal("delete-group-modal");
+        });
+      });
+
+      document.querySelectorAll("[data-group-modal-close]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          closeModal(btn.getAttribute("data-group-modal-close"));
+        });
+      });
+
+      const modal = document.getElementById("delete-group-modal");
+      if (modal) {
+        modal.addEventListener("click", function (event) {
+          if (event.target === modal) {
+            closeModal("delete-group-modal");
+          }
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeModal("delete-group-modal");
+        }
+      });
+    })();
+  </script>
+{% endblock %}
