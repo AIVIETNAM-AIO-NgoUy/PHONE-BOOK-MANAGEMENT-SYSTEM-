@@ -1,0 +1,187 @@
+<div class="table-wrapper">
+  <table class="table table-responsive-cards">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Full Name</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th class="col-hide-md">Registered</th>
+        <th class="col-hide-md">Last Login</th>
+        <th style="text-align: right; white-space: nowrap;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+        <tr>
+          <td data-label="Username">
+            <div class="table-user-cell">
+              <div class="table-user-avatar">{{ u.username|slice:":1"|upper }}</div>
+              <div class="table-user-meta">
+                <a href="{% url 'admin_panel:user_detail' u.pk %}" class="table-user-name">
+                  {{ u.username }}
+                </a>
+                {% if u.full_name %}
+                  <span class="table-user-sub">{{ u.full_name }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </td>
+          <td data-label="Email">{{ u.email }}</td>
+          <td data-label="Full Name">{{ u.full_name|default:"—" }}</td>
+          <td data-label="Role">
+            <span class="badge badge-primary">{{ u.role }}</span>
+          </td>
+          <td data-label="Status">
+            {% if u.account_status == "Active" %}
+              <span class="badge badge-success">Active</span>
+            {% else %}
+              <span class="badge badge-danger">Locked</span>
+            {% endif %}
+          </td>
+          <td class="col-hide-md" data-label="Registered" style="white-space: nowrap; color: var(--color-text-muted); font-size: 0.875rem;">
+            {{ u.created_at|date:"Y-m-d H:i" }}
+          </td>
+          <td class="col-hide-md" data-label="Last Login" style="white-space: nowrap; color: var(--color-text-muted); font-size: 0.875rem;">
+            {% if u.last_login %}
+              {{ u.last_login|date:"Y-m-d H:i" }}
+            {% else %}
+              Never
+            {% endif %}
+          </td>
+          <td class="table-actions-cell" data-label="Actions" style="text-align: right; white-space: nowrap;">
+            <div class="table-actions table-actions-inline" style="flex-wrap: nowrap; justify-content: flex-end; align-items: center; gap: 0.375rem;">
+              <a href="{% url 'admin_panel:user_edit' u.pk %}" class="btn btn-secondary btn-sm" aria-label="Edit user {{ u.username }}">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+                Edit
+              </a>
+
+              {% if u.account_status == "Active" %}
+                {% if u.pk != request.user.pk %}
+                  <button
+                    type="button"
+                    class="btn btn-outline-warning btn-sm"
+                    data-action-lock
+                    data-user-id="{{ u.pk }}"
+                    data-username="{{ u.username }}"
+                    data-lock-url="{% url 'admin_panel:user_lock' u.pk %}"
+                    aria-label="Lock user {{ u.username }}"
+                  >
+                    <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                      <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                    </svg>
+                    Lock
+                  </button>
+                {% endif %}
+              {% else %}
+                <button
+                  type="button"
+                  class="btn btn-outline-success btn-sm"
+                  data-action-unlock
+                  data-user-id="{{ u.pk }}"
+                  data-username="{{ u.username }}"
+                  data-unlock-url="{% url 'admin_panel:user_unlock' u.pk %}"
+                  aria-label="Unlock user {{ u.username }}"
+                >
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14">
+                    <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
+                  </svg>
+                  Unlock
+                </button>
+              {% endif %}
+
+              <div class="dropdown">
+                <button
+                  type="button"
+                  class="dropdown-toggle"
+                  data-dropdown-toggle
+                  aria-label="More actions for {{ u.username }}"
+                  aria-haspopup="true"
+                  aria-expanded="false"
+                >
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+                  </svg>
+                </button>
+                <div class="dropdown-menu">
+                  <a href="{% url 'admin_panel:user_detail' u.pk %}" class="dropdown-item">
+                    <svg viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                      <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                    </svg>
+                    Inspect Details
+                  </a>
+                  {% if u.pk != request.user.pk %}
+                    <div class="dropdown-divider"></div>
+                    <button
+                      type="button"
+                      class="dropdown-item dropdown-item-danger"
+                      data-confirm-modal
+                      data-confirm-title="Delete User Account"
+                      data-confirm-message="Are you sure you want to permanently delete user '{{ u.username }}'? All associated contacts, groups, and favorites will be permanently deleted. This action cannot be undone."
+                      data-confirm-url="{% url 'admin_panel:user_delete' u.pk %}"
+                      data-confirm-label="Delete User"
+                    >
+                      <svg viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                      </svg>
+                      Delete Account
+                    </button>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="8" class="table-empty-cell" style="text-align: center; padding: 2.5rem 1rem; color: var(--color-text-muted);">
+            No matching user accounts found.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.paginator.num_pages > 1 %}
+  <div class="card-footer pagination-bar">
+    <span style="font-size: 0.875rem; color: var(--color-text-muted);">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      ({{ page_obj.paginator.count }} total)
+    </span>
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      {% if page_obj.has_previous %}
+        <a
+          href="?page={{ page_obj.previous_page_number }}&status={{ status_filter|urlencode }}&sort={{ sort|urlencode }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+          class="btn btn-secondary btn-sm"
+          hx-get="{% url 'admin_panel:user_list' %}?page={{ page_obj.previous_page_number }}&status={{ status_filter|urlencode }}&sort={{ sort|urlencode }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+          hx-target="#admin-user-results-container"
+          hx-push-url="true"
+        >
+          Previous
+        </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a
+          href="?page={{ page_obj.next_page_number }}&status={{ status_filter|urlencode }}&sort={{ sort|urlencode }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+          class="btn btn-secondary btn-sm"
+          hx-get="{% url 'admin_panel:user_list' %}?page={{ page_obj.next_page_number }}&status={{ status_filter|urlencode }}&sort={{ sort|urlencode }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}"
+          hx-target="#admin-user-results-container"
+          hx-push-url="true"
+        >
+          Next
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+
+{% if is_htmx %}
+  {% include "admin_panel/partials/user_count_badge.html" with oob=True %}
+  {% include "admin_panel/partials/user_status_filter_pills.html" with oob=True %}
+  {% include "admin_panel/partials/user_status_hidden_input.html" with oob=True %}
+{% endif %}

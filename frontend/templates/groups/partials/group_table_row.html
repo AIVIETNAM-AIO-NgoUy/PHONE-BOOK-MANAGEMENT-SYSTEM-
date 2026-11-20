@@ -1,0 +1,43 @@
+<tr id="group-row-{{ group.pk }}">
+  <td data-label="Group Name">
+    <a
+      href="{% url 'groups:detail' group.pk %}"
+      style="font-weight: 600; color: var(--color-text);"
+    >
+      {{ group.group_name }}
+    </a>
+  </td>
+  <td data-label="Description">
+    {% if group.description %}
+      <span style="color: var(--color-text-muted); font-size: 0.875rem;">
+        {{ group.description }}
+      </span>
+    {% else %}
+      <span style="color: var(--color-text-muted);">—</span>
+    {% endif %}
+  </td>
+  <td data-label="Members">
+    <span class="badge badge-primary">
+      {{ group.member_count|default:0 }} member{{ group.member_count|default:0|pluralize }}
+    </span>
+  </td>
+  <td class="table-actions-cell" data-label="Actions" style="text-align: right; white-space: nowrap;">
+    <div class="table-actions table-actions-inline" style="flex-wrap: nowrap;">
+      <a href="{% url 'groups:detail' group.pk %}" class="btn btn-secondary btn-sm">
+        View Members
+      </a>
+      <a href="{% url 'groups:edit' group.pk %}" class="btn btn-secondary btn-sm">
+        Edit
+      </a>
+      <button
+        type="button"
+        class="btn btn-danger btn-sm"
+        data-group-delete-trigger
+        data-delete-url="{% url 'groups:delete' group.pk %}"
+        data-group-name="{{ group.group_name }}"
+      >
+        Delete
+      </button>
+    </div>
+  </td>
+</tr>

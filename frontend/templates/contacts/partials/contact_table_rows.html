@@ -1,0 +1,136 @@
+<div class="table-wrapper">
+  <table class="table table-responsive-cards">
+    <thead>
+      <tr>
+        <th class="table-select-cell" style="width: 44px;">
+          <input
+            type="checkbox"
+            id="select-all-contacts"
+            aria-label="Select all contacts on this page"
+          />
+        </th>
+        <th>Name</th>
+        <th>Primary Phone</th>
+        <th>Email</th>
+        <th style="text-align: right; white-space: nowrap;">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="contact-table-body">
+      {% for contact in contacts %}
+        <tr>
+          <td class="table-select-cell" data-label="Select">
+            <input
+              type="checkbox"
+              class="contact-select-checkbox"
+              name="contact_ids"
+              value="{{ contact.pk }}"
+              aria-label="Select {{ contact.full_name }}"
+            />
+          </td>
+          <td data-label="Name">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              {% if contact.avatar %}
+                <img
+                  src="{{ contact.avatar }}"
+                  alt="{{ contact.full_name }}"
+                  class="contact-avatar-sm"
+                />
+              {% else %}
+                <div class="contact-avatar-placeholder contact-avatar-sm" aria-hidden="true">
+                  {{ contact.full_name|slice:":1"|upper }}
+                </div>
+              {% endif %}
+              <div>
+                <a
+                  href="{% url 'contacts:detail' contact.pk %}"
+                  style="font-weight: 600; color: var(--color-text);"
+                >
+                  {{ contact.full_name }}
+                </a>
+                {% with phone_count=contact.phone_numbers.all|length %}
+                  {% if phone_count > 1 %}
+                    <div style="font-size: 0.75rem; color: var(--color-text-muted);">
+                      {{ phone_count }} phone numbers
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              </div>
+            </div>
+          </td>
+          <td data-label="Primary Phone">
+            {% if contact.primary_phone %}
+              <span style="font-family: var(--font-mono); font-size: 0.875rem;">
+                {{ contact.primary_phone.phone_number }}
+              </span>
+              <span class="badge badge-primary" style="margin-left: 0.25rem;">
+                {{ contact.primary_phone.phone_type }}
+              </span>
+            {% else %}
+              <span style="color: var(--color-text-muted);">—</span>
+            {% endif %}
+          </td>
+          <td data-label="Email">
+            {% if contact.email %}
+              <span>{{ contact.email }}</span>
+            {% else %}
+              <span style="color: var(--color-text-muted);">—</span>
+            {% endif %}
+          </td>
+          <td class="table-actions-cell" data-label="Actions" style="text-align: right; white-space: nowrap;">
+            <div class="table-actions table-actions-inline" style="flex-wrap: nowrap;">
+              {% include "contacts/partials/favorite_toggle_button.html" with contact=contact is_favorite=contact.is_favorite %}
+              <a href="{% url 'contacts:detail' contact.pk %}" class="btn btn-secondary btn-sm">
+                View
+              </a>
+              <a href="{% url 'contacts:edit' contact.pk %}" class="btn btn-secondary btn-sm">
+                Edit
+              </a>
+              <button
+                type="button"
+                class="btn btn-danger btn-sm"
+                data-single-delete-trigger
+                data-delete-url="{% url 'contacts:delete' contact.pk %}"
+                data-contact-name="{{ contact.full_name }}"
+              >
+                Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      {% empty %}
+        <tr>
+          <td colspan="5" class="table-empty-cell" style="text-align: center; padding: 2rem; color: var(--color-text-muted);">
+            No contacts to display.
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if page_obj.has_other_pages %}
+  <div class="card-footer pagination-bar">
+    <div style="font-size: 0.875rem; color: var(--color-text-muted);">
+      Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      ({{ page_obj.paginator.count }} {% if search_query %}matching{% else %}total{% endif %})
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      {% if page_obj.has_previous %}
+        <a
+          href="?page={{ page_obj.previous_page_number }}&sort={{ current_sort }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_group %}&group={{ selected_group.pk }}{% endif %}"
+          class="btn btn-secondary btn-sm"
+        >
+          &larr; Previous
+        </a>
+      {% endif %}
+      {% if page_obj.has_next %}
+        <a
+          href="?page={{ page_obj.next_page_number }}&sort={{ current_sort }}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}{% if selected_group %}&group={{ selected_group.pk }}{% endif %}"
+          class="btn btn-secondary btn-sm"
+        >
+          Next &rarr;
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}

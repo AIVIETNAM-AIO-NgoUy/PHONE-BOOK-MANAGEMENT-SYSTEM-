@@ -1,0 +1,37 @@
+<div id="priority-cell-{{ item.pk }}" class="priority-cell-wrapper">
+  <span
+    class="badge {% if item.priority <= 3 %}badge-danger{% elif item.priority <= 6 %}badge-warning{% else %}badge-primary{% endif %}"
+  >
+    Priority {{ item.priority }}
+  </span>
+  <form
+    method="post"
+    action="{% url 'favorites:priority' item.pk %}"
+    hx-post="{% url 'favorites:priority' item.pk %}"
+    hx-target="#priority-cell-{{ item.pk }}"
+    hx-swap="outerHTML"
+    hx-trigger="change from:find select"
+    style="display: inline-flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; max-width: 100%;"
+  >
+    {% csrf_token %}
+    <label for="priority-select-{{ item.pk }}" class="sr-only">
+      Priority for {{ item.contact.full_name }}
+    </label>
+    <select
+      id="priority-select-{{ item.pk }}"
+      name="priority"
+      class="form-select priority-select-sm"
+      style="max-width: 100%;"
+      aria-label="Priority for {{ item.contact.full_name }}"
+    >
+      {% for rank in priority_choices %}
+        <option value="{{ rank }}" {% if item.priority == rank %}selected{% endif %}>
+          {{ rank }}{% if rank == 1 %} (Highest){% elif rank == 10 %} (Lowest){% endif %}
+        </option>
+      {% endfor %}
+    </select>
+    <noscript>
+      <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+    </noscript>
+  </form>
+</div>

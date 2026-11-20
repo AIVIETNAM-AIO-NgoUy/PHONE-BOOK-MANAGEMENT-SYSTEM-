@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}Groups — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">
+        Groups
+        <span class="badge badge-primary" style="vertical-align: middle; margin-left: 0.35rem;">
+          {{ total_groups_count }}
+        </span>
+      </h1>
+      <p class="page-subtitle">
+        Categorize contacts into custom groups. Deleting a group never deletes its member contacts.
+      </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      <a href="{% url 'contacts:list' %}" class="btn btn-secondary">All Contacts</a>
+      <button type="button" class="btn btn-primary" data-group-create-trigger>
+        + New Group
+      </button>
+    </div>
+  </div>
+
+  {% if groups %}
+    <div id="group-list-card" class="card">
+      <div class="table-wrapper">
+        <table class="table table-responsive-cards">
+          <thead>
+            <tr>
+              <th>Group Name</th>
+              <th>Description</th>
+              <th>Members</th>
+              <th style="text-align: right; white-space: nowrap;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="group-table-body">
+            {% for group in groups %}
+              {% include "groups/partials/group_table_row.html" with group=group %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <div class="card">
+      <div class="card-body" style="text-align: center; padding: 3rem 1.5rem;">
+        <h2 style="margin: 0 0 0.5rem; font-size: 1.25rem;">No contact groups yet</h2>
+        <p style="margin: 0 0 1.5rem; color: var(--color-text-muted);">
+          Create custom groups like Family, Coworkers, or VIP Clients to organize your contacts.
+        </p>
+        <button type="button" class="btn btn-primary" data-group-create-trigger>
+          + New Group
+        </button>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- New Group Modal Dialog -->
+  <div
+    id="create-group-modal"
+    class="modal-backdrop{% if open_create_modal %} is-open{% endif %}"
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="{% if open_create_modal %}false{% else %}true{% endif %}"
+    aria-labelledby="create-group-modal-title"
+  >
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="create-group-modal-title" class="modal-title">Create New Group</h2>
+        <button
+          type="button"
+          class="alert-close"
+          aria-label="Close modal"
+          data-group-modal-close="create-group-modal"
+        >
+          &times;
+        </button>
+      </div>
+      <form method="post" action="{% url 'groups:create' %}" novalidate>
+        {% csrf_token %}
+        <div class="modal-body">
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert" style="margin-bottom: 1rem;">
+              {{ form.non_field_errors|join:" " }}
+            </div>
+          {% endif %}
+          <div class="form-group">
+            <label for="{{ form.group_name.id_for_label }}" class="form-label">
+              Group Name <span style="color: var(--color-danger);">*</span>
+            </label>
+            {{ form.group_name }}
+            {% if form.group_name.errors %}
+              <div class="form-error">{{ form.group_name.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label for="{{ form.description.id_for_label }}" class="form-label">
+              Description (Optional)
+            </label>
+            {{ form.description }}
+            {% if form.description.errors %}
+              <div class="form-error">{{ form.description.errors|join:" " }}</div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-group-modal-close="create-group-modal"
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary">Create Group</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% include "groups/partials/delete_group_confirm_modal.html" %}
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      document.querySelectorAll("[data-group-create-trigger]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          openModal("create-group-modal");
+        });
+      });
+
+      document.addEventListener("click", function (event) {
+        const btn = event.target.closest("[data-group-delete-trigger]");
+        if (!btn) return;
+
+        const url = btn.getAttribute("data-delete-url");
+        const name = btn.getAttribute("data-group-name") || "this group";
+        const form = document.getElementById("delete-group-modal-form");
+        const msg = document.getElementById("delete-group-modal-message");
+        if (form && url) {
+          form.setAttribute("action", url);
+        }
+        if (msg) {
+          msg.textContent =
+            'Are you sure you want to delete the group "' +
+            name +
+            '"? Associated contacts will NOT be deleted.';
+        }
+        openModal("delete-group-modal");
+      });
+
+      document.querySelectorAll("[data-group-modal-close]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          closeModal(btn.getAttribute("data-group-modal-close"));
+        });
+      });
+
+      ["create-group-modal", "delete-group-modal"].forEach((modalId) => {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+              closeModal(modalId);
+            }
+          });
+        }
+      });
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeModal("create-group-modal");
+          closeModal("delete-group-modal");
+        }
+      });
+    })();
+  </script>
+{% endblock %}

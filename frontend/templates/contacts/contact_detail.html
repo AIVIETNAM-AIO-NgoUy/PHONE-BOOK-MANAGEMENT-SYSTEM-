@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}{{ contact.full_name }} — Phone Book Management System{% endblock %}
+
+{% block content %}
+  <div class="page-header">
+    <div>
+      <a href="{% url 'contacts:list' %}" style="font-size: 0.875rem; font-weight: 600;">
+        &larr; Back to Contacts
+      </a>
+      <h1 class="page-title" style="margin-top: 0.35rem;">{{ contact.full_name }}</h1>
+    </div>
+    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+      {% include "contacts/partials/favorite_toggle_button.html" with contact=contact is_favorite=is_favorite show_label=True %}
+      {% if other_contacts %}
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-merge-picker-trigger
+        >
+          Smart Merge
+        </button>
+      {% endif %}
+      <a href="{% url 'contacts:edit' contact.pk %}" class="btn btn-primary">Edit Contact</a>
+      <button
+        type="button"
+        class="btn btn-danger"
+        data-single-delete-trigger
+        data-delete-url="{% url 'contacts:delete' contact.pk %}"
+        data-contact-name="{{ contact.full_name }}"
+      >
+        Delete Contact
+      </button>
+    </div>
+  </div>
+
+  {% if duplicate_candidates %}
+    <div class="alert alert-warning duplicate-warning-card" role="region" aria-label="Potential duplicate contacts" style="margin-bottom: 1.25rem;">
+      <div style="width: 100%;">
+        <strong>Potential Duplicate{{ duplicate_candidates|length|pluralize }} Detected</strong>
+        <div class="duplicate-candidate-list" style="margin-top: 0.5rem;">
+          {% for candidate in duplicate_candidates %}
+            <div class="duplicate-candidate-row">
+              <div>
+                <strong>{{ candidate.contact.full_name }}</strong>
+                <span class="badge badge-warning">{{ candidate.reason_label }}</span>
+                {% if candidate.primary_phone %}
+                  <span style="font-family: var(--font-mono); font-size: 0.85rem; margin-left: 0.35rem;">
+                    {{ candidate.primary_phone.phone_number }}
+                  </span>
+                {% endif %}
+              </div>
+              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{% url 'contacts:detail' candidate.contact.pk %}" class="btn btn-secondary btn-sm">
+                  View Existing
+                </a>
+                <button
+                  type="button"
+                  class="btn btn-primary btn-sm"
+                  hx-get="{% url 'contacts:merge' %}?target_contact_id={{ contact.pk }}&source_contact_id={{ candidate.contact.pk }}"
+                  hx-target="#merge-modal-container"
+                  hx-swap="innerHTML"
+                >
+                  Smart Merge
+                </button>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <div class="contact-detail-grid">
+    <div class="card">
+      <div class="card-body">
+        <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+          {% if contact.avatar %}
+            <img
+              src="{{ contact.avatar }}"
+              alt="{{ contact.full_name }}"
+              class="contact-avatar-lg"
+            />
+          {% else %}
+            <div class="contact-avatar-placeholder contact-avatar-lg" aria-hidden="true">
+              {{ contact.full_name|slice:":1"|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <h2 style="margin: 0; font-size: 1.375rem;">{{ contact.full_name }}</h2>
+            <p style="margin: 0.25rem 0 0; font-size: 0.875rem; color: var(--color-text-muted);">
+              Last updated {{ contact.updated_at|date:"Y-m-d H:i" }}
+            </p>
+          </div>
+        </div>
+
+        <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Phone Numbers</h3>
+        <div class="phone-badge-list" style="margin-bottom: 1.5rem;">
+          {% for phone in phone_numbers %}
+            <div class="phone-detail-row">
+              <span style="font-family: var(--font-mono); font-weight: 600;">
+                {{ phone.phone_number }}
+              </span>
+              <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                <span class="badge badge-primary">{{ phone.phone_type }}</span>
+                {% if phone.is_primary %}
+                  <span class="badge badge-success">Primary</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+        <h3 style="margin: 0 0 0.75rem; font-size: 1rem;">Contact Information</h3>
+        <dl class="detail-dl">
+          <div class="detail-dl-row">
+            <dt>Email</dt>
+            <dd>{{ contact.email|default:"—" }}</dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Residential Address</dt>
+            <dd>{{ contact.address|default:"—" }}</dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Work Address</dt>
+            <dd>{{ contact.work_address|default:"—" }}</dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Birthday</dt>
+            <dd>{% if contact.birthday %}{{ contact.birthday|date:"Y-m-d" }}{% else %}—{% endif %}</dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Notes</dt>
+            <dd style="white-space: pre-wrap;">{{ contact.notes|default:"—" }}</dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Groups</dt>
+            <dd>
+              {% if groups %}
+                <div style="display: flex; flex-wrap: wrap; gap: 0.375rem;">
+                  {% for group in groups %}
+                    <a href="{% url 'groups:detail' group.pk %}" class="badge badge-primary">
+                      {{ group.group_name }}
+                    </a>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <span style="color: var(--color-text-muted);">None</span>
+              {% endif %}
+            </dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card" style="align-self: start;">
+      <div class="card-header">
+        <h2 class="card-title">Metadata</h2>
+      </div>
+      <div class="card-body">
+        <dl class="detail-dl">
+          <div class="detail-dl-row">
+            <dt>Interactions</dt>
+            <dd style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;">
+              <span data-interaction-count="{{ contact.pk }}">{{ interaction_count }}</span>
+              <button
+                type="button"
+                class="btn btn-secondary btn-sm"
+                data-log-interaction
+                data-interact-url="{% url 'contacts:interact' contact.pk %}"
+                data-contact-id="{{ contact.pk }}"
+              >
+                Log Interaction
+              </button>
+            </dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Last Contacted</dt>
+            <dd data-last-contacted="{{ contact.pk }}">
+              {% if last_contacted_at %}
+                {{ last_contacted_at|date:"Y-m-d H:i" }}
+              {% else %}
+                Never
+              {% endif %}
+            </dd>
+          </div>
+          <div class="detail-dl-row">
+            <dt>Created</dt>
+            <dd>{{ contact.created_at|date:"Y-m-d H:i" }}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  {% include "contacts/partials/delete_confirm_modal.html" %}
+
+  {% if other_contacts %}
+    <div
+      id="merge-source-picker-modal"
+      class="modal-backdrop"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="merge-source-picker-title"
+    >
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <h2 id="merge-source-picker-title" class="modal-title">Merge Another Contact Into {{ contact.full_name }}</h2>
+          <button
+            type="button"
+            class="alert-close"
+            aria-label="Close modal"
+            data-contact-modal-close="merge-source-picker-modal"
+          >
+            &times;
+          </button>
+        </div>
+        <form
+          hx-get="{% url 'contacts:merge' %}"
+          hx-target="#merge-modal-container"
+          hx-swap="innerHTML"
+          data-merge-picker-form
+        >
+          <div class="modal-body">
+            <input type="hidden" name="target_contact_id" value="{{ contact.pk }}" />
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="merge-source-select" class="form-label">
+                Select duplicate contact to merge &amp; remove:
+              </label>
+              <select id="merge-source-select" name="source_contact_id" class="form-select" required>
+                {% for other in other_contacts %}
+                  <option value="{{ other.pk }}">
+                    {{ other.full_name }}{% if other.primary_phone %} ({{ other.primary_phone.phone_number }}){% endif %}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-contact-modal-close="merge-source-picker-modal"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">Preview Merge</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  <div id="merge-modal-container" aria-live="polite"></div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (!modal) return;
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      document.querySelectorAll("[data-single-delete-trigger]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const url = btn.getAttribute("data-delete-url");
+          const name = btn.getAttribute("data-contact-name") || "this contact";
+          const form = document.getElementById("single-delete-modal-form");
+          const msg = document.getElementById("single-delete-modal-message");
+          if (form && url) {
+            form.setAttribute("action", url);
+          }
+          if (msg) {
+            msg.textContent =
+              'Are you sure you want to permanently delete "' + name + '"? This action cannot be undone.';
+          }
+          openModal("single-delete-modal");
+        });
+      });
+
+      document.querySelectorAll("[data-contact-modal-close]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          closeModal(btn.getAttribute("data-contact-modal-close"));
+        });
+      });
+
+      const modal = document.getElementById("single-delete-modal");
+      if (modal) {
+        modal.addEventListener("click", function (event) {
+          if (event.target === modal) {
+            closeModal("single-delete-modal");
+          }
+        });
+      }
+
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+          closeModal("single-delete-modal");
+          closeModal("merge-source-picker-modal");
+          const mergeContainer = document.getElementById("merge-modal-container");
+          if (mergeContainer) {
+            mergeContainer.innerHTML = "";
+          }
+        }
+      });
+
+      document.querySelectorAll("[data-merge-picker-trigger]").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          openModal("merge-source-picker-modal");
+        });
+      });
+
+      const pickerModal = document.getElementById("merge-source-picker-modal");
+      if (pickerModal) {
+        pickerModal.addEventListener("click", function (event) {
+          if (event.target === pickerModal) {
+            closeModal("merge-source-picker-modal");
+          }
+        });
+        const pickerForm = pickerModal.querySelector("[data-merge-picker-form]");
+        if (pickerForm) {
+          pickerForm.addEventListener("htmx:beforeRequest", function () {
+            closeModal("merge-source-picker-modal");
+          });
+        }
+      }
+    })();
+  </script>
+{% endblock %}
