@@ -62,17 +62,18 @@
 - *PR \#12 (`feature/test-backend-suites`)*: Bộ 119 bài kiểm thử tự động toàn diện: Unit test, Contract test & Security isolation test.
 - *PR \#14 (`feature/test-e2e-benchmarks`)*: Kịch bản kiểm thử tích hợp E2E, UI navigation và kiểm thử chịu tải bằng Locust.
 
-== 1.2. Kịch bản mở đầu 60 giây (Nói tự tin, dứt khoát)
-#tip(title: "KỊCH BẢN PHÁT BIỂU 60S ĐẦU TIÊN KHI BƯỚC VÀO BÁO CÁO")[
-  "Dạ em chào cô. Trong đồ án Phone Book Management System, em phụ trách toàn bộ *Trải nghiệm người dùng UI/UX, Kiến trúc Frontend động với HTMX, Phân hệ Quản trị Admin & Giám sát Audit Log, cùng Hệ thống kiểm thử tự động toàn diện*. Ba đóng góp kỹ thuật trọng tâm của em gồm:
-  1. *Trải nghiệm người dùng hiện đại không tải lại trang*: Ứng dụng HTMX kết hợp hệ thống CSS Tokens tự xây dựng, mang lại tốc độ phản hồi tức thì dưới 50ms mà không cần phụ thuộc thư viện nặng như React.
-  2. *Quản trị hệ thống & Audit Logging bất biến*: Giám sát toàn bộ hoạt động hệ thống, lưu vết chi tiết từng thay đổi dữ liệu dạng JSON diff để bảo đảm an ninh và chống chối bỏ.
-  3. *Chất lượng phần mềm bảo đảm tuyệt đối*: Xây dựng 119 bài kiểm thử tự động bao phủ từ tính năng, phân lập bảo mật đến bài test tải mô phỏng 100 người dùng đồng thời bằng Locust."
+== 1.2. Kịch bản phát biểu tiếp nối (Tự nhiên, tươi tắn, tự tin)
+#tip(title: "LỜI THOẠI TIẾP NỐI PHẦN TRÌNH BÀY CỦA HIẾU")[
+  "Dạ em chào cô. Tiếp nối phần demo của bạn Hiếu, trong dự án này em phụ trách về *trải nghiệm người dùng, phân loại nhóm danh bạ, trang quản trị hệ thống và kiểm tra chất lượng phần mềm*.
+  
+  Mục tiêu của em là làm sao để giao diện thật thân thiện, thao tác bấm đâu mượt đó, giúp người dùng sắp xếp các mối quan hệ rõ ràng và ban quản trị có thể giám sát an toàn toàn bộ hệ thống.
+  
+  Sau đây em xin phép được tiếp tục phần demo giao diện thực tế và các tính năng mở rộng ạ."
 ]
 
 ---
 
-= PHẦN 2: CHECKLIST DEMO THỰC CHIẾN 3 PHÚT
+= PHẦN 2: CHECKLIST DEMO THỰC CHIẾN (PHẦN CỦA SINH & KẾT THÚC)
 
 #table(
   columns: (0.8fr, 2fr, 3.2fr),
@@ -81,31 +82,31 @@
   inset: 6pt,
   [#text(fill: white, weight: "bold")[Bước]],
   [#text(fill: white, weight: "bold")[Thao tác trên màn hình]],
-  [#text(fill: white, weight: "bold")[Câu nói đắt giá thuyết minh với cô]],
+  [#text(fill: white, weight: "bold")[Lời thoại tự nhiên (Kể chuyện thực tế)]],
   
   [1 (30s)],
-  [Mở trang chủ danh bạ -> Thu nhỏ cửa sổ trình duyệt sang kích thước Mobile],
-  [Dạ giao diện sử dụng hệ thống CSS Design Tokens tự viết 100%, hỗ trợ Responsive mượt mà, tự động chuyển đổi bảng dữ liệu sang dạng thẻ Card trên di động.],
+  [Mở trang chủ danh bạ -> Thu nhỏ cửa sổ sang kích cỡ màn hình điện thoại],
+  [Dạ đầu tiên là về trải nghiệm sử dụng. Giao diện được tụi em thiết kế để tự động co giãn đẹp mắt trên cả máy tính lẫn điện thoại di động. Khi dùng trên điện thoại, bảng danh bạ sẽ tự động chuyển thành các tấm thẻ gọn gàng để ngón tay dễ bấm.],
   
-  [2 (45s)],
-  [Gõ từ khóa vào ô tìm kiếm danh bạ -> Quan sát bảng cập nhật tức thì],
-  [Đây là tính năng Live Search thời gian thực bằng HTMX với cơ chế debounce 300ms. Chỉ có phần thân bảng (`tbody`) được hoán đổi nội dung mà không cần reload trang.],
+  [2 (30s)],
+  [Gõ nhẹ vài chữ vào ô tìm kiếm -> Bấm ngôi sao Favorite của 1 liên hệ -> Icon đổi màu vàng ngay],
+  [Điểm cộng lớn của giao diện là cảm giác sử dụng rất mượt. Mỗi khi em gõ tìm kiếm hay bấm đánh dấu yêu thích một người, bảng dữ liệu tự cập nhật ngay trước mắt mà màn hình không hề bị chớp hay phải tải lại cả trang web.],
   
-  [3 (30s)],
-  [Bấm vào icon ngôi sao của một liên hệ -> Icon đổi màu vàng ngay lập tức],
-  [Thao tác đánh dấu Favorite được xử lý qua HTMX `hx-post` với `hx-swap="outerHTML"`. Trang Favorites cho phép lọc theo 5 mức độ ưu tiên từ khẩn cấp đến bình thường.],
+  [3 (35s)],
+  [Bấm vào mục 'Danh bạ yêu thích' -> Chỉ vào các mức ưu tiên (Gia đình, Công việc...)],
+  [Ở mục 'Yêu thích', tụi em cho phép phân loại theo các mức ưu tiên từ khẩn cấp đến bình thường. Người dùng chỉ cần 1 giây là có thể mở ra danh sách những người thân thiết nhất để liên lạc ngay mà không cần lướt tìm trong hàng trăm số.],
   
-  [4 (30s)],
-  [Tạo một Nhóm mới "Đối tác 2026" -> Thêm 2 liên hệ vào nhóm],
-  [Mô hình Nhóm được thiết kế theo quan hệ nhiều-nhiều (N-N), một liên hệ có thể thuộc nhiều nhóm mà khi xóa nhóm thì liên hệ gốc không hề bị ảnh hưởng.],
+  [4 (35s)],
+  [Bấm vào mục 'Nhóm' -> Mở nhóm 'Công ty' hoặc tạo nhóm mới -> Thêm thành viên vào nhóm],
+  [Tụi em cũng xây dựng tính năng phân nhóm rất linh hoạt. Một người vừa có thể nằm trong nhóm 'Đồng nghiệp', vừa nằm trong nhóm 'Bạn bè'. Nếu sau này người dùng xóa nhóm đó đi thì các số điện thoại gốc vẫn còn nguyên, hoàn toàn không bị ảnh hưởng.],
   
-  [5 (45s)],
-  [Đăng nhập quyền Admin -> Mở Admin Dashboard -> Chỉ vào bảng Audit Log -> Bấm khóa 1 tài khoản],
-  [Toàn bộ hoạt động trong hệ thống đều được tự động ghi lại trong Audit Log. Giao diện cho phép xem chi tiết sai khác (diff) dữ liệu trước và sau khi sửa.],
+  [5 (35s)],
+  [Đăng nhập quyền Admin -> Mở trang Quản trị -> Chỉ vào bảng Lịch sử -> Mở xem chi tiết 1 dòng có so sánh cũ/mới],
+  [Đối với người quản trị, tụi em cung cấp một bảng điều khiển để theo dõi sức khỏe hệ thống. Đặc biệt là có một trang 'Nhật ký lịch sử', ghi nhận lại chi tiết ai đã thêm, sửa, xóa hay gộp số nào, số cũ là gì và số mới là gì. Nhờ vậy nếu có ai thao tác nhầm hoặc có hành vi bất thường thì quản trị viên đều nắm rõ.],
   
-  [6 (15s)],
-  [Mở Terminal chạy `./venv/bin/pytest` -> Chỉ vào kết quả 119 tests xanh lá],
-  [Toàn bộ hệ thống được bảo vệ bởi 119 bài kiểm thử tự động, chạy xong trong 6 giây, đảm bảo không có bất kỳ lỗi hồi quy hay rò rỉ dữ liệu giữa các người dùng.]
+  [6 (20s)],
+  [Mở Terminal chạy `./venv/bin/pytest` -> Chỉ vào 119 bài test xanh lá -> Quay sang cô cười tươi],
+  [*"Và cuối cùng, để đảm bảo toàn bộ hệ thống hoạt động ổn định và không phát sinh lỗi vặt, tụi em đã viết sẵn hơn 100 bài kiểm tra tự động bao phủ toàn bộ chức năng. Dạ phần trình bày của nhóm tụi em đến đây là hoàn tất, nhóm em rất mong nhận được những nhận xét và câu hỏi của cô ạ!"*]
 )
 
 ---

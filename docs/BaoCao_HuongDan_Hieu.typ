@@ -62,17 +62,18 @@
 - *PR \#11 (`feature/contacts-merge-service`)*: Thuật toán gộp thông minh (Smart Merge) & xử lý xung đột.
 - *PR \#13 (`feature/database-backup-restore`)*: Kịch bản backup/restore tự động PostgreSQL, Docker & seed data.
 
-== 1.2. Kịch bản mở đầu 60 giây (Nói tự tin, dứt khoát)
-#tip(title: "KỊCH BẢN PHÁT BIỂU 60S ĐẦU TIÊN KHI BƯỚC VÀO BÁO CÁO")[
-  "Dạ em chào cô. Trong đồ án Phone Book Management System, em phụ trách toàn bộ *Kiến trúc Backend Core, Cơ sở dữ liệu và Hạ tầng DevOps*. Mục tiêu cốt lõi của em là giải quyết 3 bài toán kỹ thuật lớn:
-  1. *Hiệu năng tìm kiếm mờ cực đại*: Sử dụng PostgreSQL Trigram GIN Indexing, cho phép gõ sai dấu, sai chính tả vẫn tìm ra liên hệ với độ trễ dưới 15ms.
-  2. *Toàn vẹn dữ liệu và Chống trùng lặp*: Xây dựng thuật toán Smart Deduplication quét trùng và Smart Merge xử lý gộp an toàn trong `transaction.atomic()`.
-  3. *Bảo mật & Hạ tầng sẵn sàng*: Băm mật khẩu Argon2 chống GPU crack, phân quyền đa người dùng và đóng gói Docker container hóa chuẩn production."
+== 1.2. Kịch bản mở đầu báo cáo nhóm (Nói tự nhiên, khiêm tốn, tự tin)
+#tip(title: "LỜI THOẠI MỞ ĐẦU KHI BẮT ĐẦU BUỔI BÁO CÁO")[
+  "Dạ em chào cô. Hôm nay nhóm tụi em xin phép được báo cáo và demo sản phẩm *Phone Book Management System - Hệ thống Quản lý Danh bạ Điện thoại*.
+  
+  Xuất phát từ thực tế là danh bạ điện thoại của mỗi người sau một thời gian sử dụng thường rất lộn xộn, bị lưu trùng lặp nhiều lần, hoặc khi cần gọi gấp lại không nhớ rõ tên chính xác, nên nhóm em đã xây dựng hệ thống này nhằm mang lại trải nghiệm tiện lợi và thông minh nhất cho người dùng.
+  
+  Trong đồ án này, em phụ trách phần *xử lý dữ liệu và các nghiệp vụ cốt lõi*. Sau đây em xin phép được bắt đầu phần demo các tình huống sử dụng thực tế của hệ thống ạ."
 ]
 
 ---
 
-= PHẦN 2: CHECKLIST DEMO THỰC CHIẾN 3 PHÚT
+= PHẦN 2: CHECKLIST DEMO THỰC CHIẾN (PHẦN CỦA HIẾU & CHUYỂN GIAO)
 
 #table(
   columns: (0.8fr, 2fr, 3.2fr),
@@ -81,27 +82,27 @@
   inset: 6pt,
   [#text(fill: white, weight: "bold")[Bước]],
   [#text(fill: white, weight: "bold")[Thao tác trên màn hình]],
-  [#text(fill: white, weight: "bold")[Câu nói đắt giá thuyết minh với cô]],
+  [#text(fill: white, weight: "bold")[Lời thoại tự nhiên (Kể chuyện thực tế)]],
   
-  [1 (30s)],
-  [Bật Docker terminal -> `docker compose ps` -> Mở trang web đăng nhập],
-  [Dạ hệ thống được container hóa bằng Docker, chạy PostgreSQL 16 Alpine độc lập. Toàn bộ tài khoản được băm mật khẩu chuẩn Argon2id.],
+  [1 (20s)],
+  [Mở trang web -> Đăng nhập tài khoản],
+  [Dạ đầu tiên, mỗi người dùng khi sử dụng hệ thống đều có một tài khoản riêng biệt để đảm bảo tính riêng tư, danh bạ của ai thì chỉ người đó mới có quyền xem và quản lý.],
   
-  [2 (45s)],
-  [Tạo mới liên hệ có *3 số điện thoại* (Mobile, Work, Home)],
-  [Mô hình dữ liệu được chuẩn hóa 3NF tách bảng `PhoneNumber`, một liên hệ có thể có vô số số điện thoại và đánh dấu số chính `is_primary`.],
+  [2 (40s)],
+  [Bấm 'Thêm liên hệ mới' -> Nhập tên anh Nam -> Thêm *3 số điện thoại* (Di động, Cơ quan, Nhà riêng) -> Đánh dấu 1 số chính],
+  [Trong đời sống thực tế, một người quen của mình thường có nhiều số như số cá nhân, số cơ quan hay số nhà riêng. Vì vậy hệ thống của tụi em cho phép lưu bao nhiêu số điện thoại tùy thích cho một người và dễ dàng đánh dấu đâu là số chính để tiện bấm gọi nhanh.],
   
   [3 (45s)],
-  [Gõ tìm kiếm từ khóa sai chính tả hoặc không dấu (vd: `nguyen` hoặc `thang`)],
-  [Nhờ kích hoạt extension `pg_trgm` và GIN Index trên các trường họ tên, email, hệ thống tính toán `TrigramSimilarity` trả về kết quả mờ tức thì.],
+  [Vào ô tìm kiếm -> Gõ từ khóa sai chính tả hoặc không dấu (vd: `nguyen` hoặc `thang`)],
+  [Đặc biệt, nhiều khi mình cần tìm một người bạn mà chỉ nhớ mang máng cái tên, hoặc đang vội gõ nhanh không dấu, gõ sai một vài ký tự... thì như cô thấy, hệ thống vẫn nhận diện thông minh và gợi ý ra đúng liên hệ ngay lập tức chứ không báo rỗng như các hệ thống thông thường.],
   
   [4 (45s)],
-  [Tạo 1 liên hệ mới trùng tên hoặc số điện thoại -> Xem cảnh báo Duplicate -> Bấm Merge Preview -> Merge],
-  [Hệ thống tự động phát hiện trùng qua thuật toán so khớp đa tiêu chí. Khi gộp, toàn bộ số điện thoại và tag được bảo lưu trong một Transaction nguyên tử.],
+  [Thêm 1 liên hệ mới cố tình trùng tên hoặc số với người cũ -> Màn hình hiện cảnh báo trùng -> Bấm 'Xem trước gộp' (Merge Preview) -> Bấm 'Gộp liên hệ'],
+  [Một vấn đề rất phổ biến nữa là người dùng hay vô tình lưu trùng một người nhiều lần. Hệ thống của tụi em sẽ tự động phát hiện và cảnh báo ngay. Tụi em có tính năng 'Gộp danh bạ' giúp dồn tất cả các số điện thoại của hai bên lại làm một người duy nhất một cách an toàn, không lo bị mất số hay phải xóa thủ công.],
   
   [5 (15s)],
-  [Mở terminal chạy `./scripts/backup_restore.sh backup`],
-  [Toàn bộ CSDL được sao lưu nén tự động kèm mã kiểm tra tính toàn vẹn md5, phục hồi chỉ trong một lệnh.]
+  [Quay lại màn hình chính danh bạ -> Nhìn sang Sinh và mời tiếp tục],
+  [*"Dạ tiếp theo đây, để cô thấy rõ hơn về cách phân loại nhóm, trải nghiệm giao diện mượt mà và bảng điều khiển quản trị, em xin phép nhường phần trình bày cho bạn Sinh tiếp tục ạ."*]
 )
 
 ---
