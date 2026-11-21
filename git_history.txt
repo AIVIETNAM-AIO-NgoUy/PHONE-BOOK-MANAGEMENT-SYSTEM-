@@ -1,0 +1,99 @@
+9b0e6ec | binvinh206-stack | 2026-11-21 19:32:05 +0700 | Add files via upload
+1c065f1 | CoffatDev | 2026-11-21 18:12:46 +0700 | docs: refine presentation script and demo dialogues with user-centric storytelling
+2fa2212 | CoffatDev | 2026-11-21 18:04:31 +0700 | docs: add pocket defense guidebooks and Q&A references for Hieu and Sinh
+b716746 | binvinh206-stack | 2026-11-21 13:30:41 +0700 | Add files via upload
+4b8f0e4 | Uy Ngo | 2026-11-20 22:38:01 +0700 | merge: integrate project updates into Hieu
+c695461 | Uy Ngo | 2026-11-20 21:53:58 +0700 | backend
+1eced16 | CoffatDev | 2026-11-20 17:30:00 +0700 | Merge pull request #14 from feature/test-e2e-benchmarks
+f9d38f2 | truongsinhtran04-ux | 2026-11-20 14:30:00 +0700 | test: implement end-to-end integration workflows, UI navigation and performance benchmarks
+7c1b7b6 | truongsinhtran04-ux | 2026-11-20 14:00:00 +0700 | Merge pull request #13 from feature/database-backup-restore
+4d4c732 | CoffatDev | 2026-11-20 11:00:00 +0700 | Merge branch 'feature/database-backup' into Hieu
+724a52d | CoffatDev | 2026-11-20 09:30:00 +0700 | feat(database): integrate portable database SQL dump and automated backup/restore scripts
+78c4f02 | CoffatDev | 2026-11-20 09:30:00 +0700 | feat(database): integrate automated PostgreSQL backup, restore pipeline and SQL seed
+38e7384 | CoffatDev | 2026-11-19 16:00:00 +0700 | Merge branch 'feature/testing-automation' into Hieu
+063ea39 | CoffatDev | 2026-11-19 14:00:00 +0700 | Merge pull request #12 from feature/test-backend-suites
+d4f8a8e | CoffatDev | 2026-11-19 10:15:00 +0700 | test: add comprehensive automated test suites covering unit, contract, security and performance
+272eb7f | truongsinhtran04-ux | 2026-11-19 09:00:00 +0700 | test: implement unit, contract and security test suites for backend services
+b49632e | CoffatDev | 2026-11-18 16:45:00 +0700 | Merge branch 'feature/frontend-ui' into Hieu
+76f657e | truongsinhtran04-ux | 2026-11-18 15:00:00 +0700 | Merge pull request #11 from feature/contacts-merge-service
+cb8c6f2 | CoffatDev | 2026-11-18 11:00:00 +0700 | feat(ui): implement responsive UI design system with HTMX and modern CSS tokens
+3c7a55f | CoffatDev | 2026-11-18 09:30:00 +0700 | feat(contacts): implement intelligent contact merge service and conflict resolver
+5dc39d7 | CoffatDev | 2026-11-17 18:30:00 +0700 | Merge pull request #10 from feature/contacts-ui-htmx
+3e0a9a4 | CoffatDev | 2026-11-17 17:30:00 +0700 | Merge branch 'feature/admin-governance' into Hieu
+69fb1e0 | truongsinhtran04-ux | 2026-11-17 15:00:00 +0700 | feat(ui): build interactive HTMX templates for contacts and modal workflows
+f0896db | truongsinhtran04-ux | 2026-11-17 14:00:00 +0700 | Merge pull request #9 from feature/contacts-search-dedup
+26d6a72 | CoffatDev | 2026-11-17 14:00:00 +0700 | feat(admin): build system governance, audit logging and administrator panel
+d076b92 | CoffatDev | 2026-11-17 09:00:00 +0700 | feat(contacts): add smart trigram search engine and duplicate contact detection
+1a2dcaf | CoffatDev | 2026-11-16 17:30:00 +0700 | Merge pull request #8 from feature/admin-governance
+3090f8c | truongsinhtran04-ux | 2026-11-16 11:00:00 +0700 | feat(admin): build administrator governance, audit logging and user management
+11c6e25 | CoffatDev | 2026-11-15 18:00:00 +0700 | Merge branch 'feature/groups-favorites' into Hieu
+c208daa | CoffatDev | 2026-11-15 16:00:00 +0700 | feat(favorites): implement contact favorite lists and priority management
+be9fcd7 | truongsinhtran04-ux | 2026-11-15 15:45:00 +0700 | Merge pull request #7 from feature/contacts-service
+274b49e | CoffatDev | 2026-11-15 13:30:00 +0700 | feat(groups): implement contact grouping and categorization services
+3c92e57 | CoffatDev | 2026-11-15 09:30:00 +0700 | feat(contacts): implement contact service layer, CRUD business logic and forms
+e47154f | truongsinhtran04-ux | 2026-11-15 00:37:13 +0700 | Add files via upload
+e531fad | Uy Ngo | 2026-11-14 19:43:02 +0700 | Not complete
+89a3716 | Uy Ngo | 2026-11-14 17:02:18 +0700 | Agent host session 38dc70a1-58b8-4d1e-937f-f228aeb1544a - baseline checkpoint
+2e66a09 | CoffatDev | 2026-11-14 17:00:00 +0700 | Merge branch 'feature/contacts-search-merge' into Hieu
+fe83eaf | CoffatDev | 2026-11-14 16:30:00 +0700 | Merge pull request #6 from feature/favorites-priority
+99daffb | Uy Ngo | 2026-11-14 15:27:35 +0700 | model complete
+1cf8631 | CoffatDev | 2026-11-14 11:20:00 +0700 | feat(contacts): add smart contact search, trigram indexing and duplicate merge service
+63eb802 | truongsinhtran04-ux | 2026-11-14 10:30:00 +0700 | feat(favorites): implement priority favorites management and quick access services
+6b63fc3 | Uy Ngo | 2026-11-14 00:28:20 +0700 | done
+b7d072b | Uy Ngo | 2026-11-13 20:17:14 +0700 | File exits requiment code for example file
+ec08943 | Uy Ngo | 2026-11-13 20:03:16 +0700 | Update Folder
+3243926 | truongsinhtran04-ux | 2026-11-13 14:30:00 +0700 | Merge pull request #5 from feature/contacts-models
+90830bc | Uy Ngo | 2026-11-13 10:02:37 +0700 | File Doc push into Doc directory
+9090c0c | Uy Ngo | 2026-11-13 09:54:17 +0700 | Update13/11
+bf1b51c | CoffatDev | 2026-11-13 09:00:00 +0700 | feat(contacts): define contact models, phone relations and schema migrations
+61470ca | CoffatDev | 2026-11-12 17:00:00 +0700 | Merge pull request #4 from feature/groups-management
+41c3007 | CoffatDev | 2026-11-12 16:30:00 +0700 | Merge branch 'feature/contacts-service' into Hieu
+ae88e10 | CoffatDev | 2026-11-12 10:45:00 +0700 | feat(contacts): implement contact management models, phone number relations and contact books
+fba0985 | truongsinhtran04-ux | 2026-11-12 10:15:00 +0700 | feat(groups): implement contact grouping models, categorization services and views
+b23a3b7 | truongsinhtran04-ux | 2026-11-11 16:00:00 +0700 | Merge pull request #3 from feature/accounts-views-auth
+590fa42 | CoffatDev | 2026-11-11 09:30:00 +0700 | feat(accounts): build authentication services, registration, login and session views
+1bab62c | CoffatDev | 2026-11-10 17:00:00 +0700 | Merge branch 'feature/auth-accounts' into Hieu
+a251ffa | CoffatDev | 2026-11-10 15:30:00 +0700 | Merge pull request #2 from feature/ui-design-system
+c539219 | CoffatDev | 2026-11-10 14:15:00 +0700 | feat(auth): implement custom user model, Argon2 hashing and authentication system
+11c2b76 | truongsinhtran04-ux | 2026-11-10 10:00:00 +0700 | feat(ui): design modern CSS token system, responsive layout and base templates
+f49fd65 | truongsinhtran04-ux | 2026-11-09 14:00:00 +0700 | Merge pull request #1 from feature/accounts-models
+8debda9 | CoffatDev | 2026-11-09 10:30:00 +0700 | feat(accounts): implement custom user model and initial migrations
+c4f7b53 | CoffatDev | 2026-11-08 09:30:00 +0700 | feat(core): initialize Django project structure with PostgreSQL, Docker & settings
+1f55e45 | Uy Ngo | 2026-11-04 20:44:58 +0700 | CLASS DIAGRAM + DATA MODEL WAS REPAIR
+2aacb28 | truongsinhtran04-ux | 2026-11-04 02:22:55 +0700 | Add files via upload
+866d453 | truongsinhtran04-ux | 2026-11-04 02:22:43 +0700 | Add files via upload
+50a2100 | truongsinhtran04-ux | 2026-11-04 02:22:34 +0700 | Delete datamodel.drawio (2).png
+e39cd3d | truongsinhtran04-ux | 2026-11-04 02:22:20 +0700 | Delete datamodel (3).drawio
+7f84c41 | truongsinhtran04-ux | 2026-11-04 02:21:54 +0700 | Add files via upload
+a2d4c9a | truongsinhtran04-ux | 2026-11-04 02:19:40 +0700 | Add files via upload
+41f22c9 | truongsinhtran04-ux | 2026-11-04 02:19:28 +0700 | Delete datamodel.drawio (2).png
+5f7d940 | truongsinhtran04-ux | 2026-11-04 02:19:13 +0700 | Delete datamodel (3).drawio
+66b17b0 | truongsinhtran04-ux | 2026-11-03 21:05:27 +0700 | Add files via upload
+a123612 | truongsinhtran04-ux | 2026-11-03 21:05:15 +0700 | Delete datamodel (2).drawio
+b9aa1d5 | truongsinhtran04-ux | 2026-11-03 21:04:46 +0700 | Add files via upload
+3db8d50 | truongsinhtran04-ux | 2026-11-03 21:03:49 +0700 | Add files via upload
+b080ff9 | truongsinhtran04-ux | 2026-11-03 21:03:33 +0700 | Delete datamodel.drawio (1).png
+0a09f8d | truongsinhtran04-ux | 2026-11-03 21:03:02 +0700 | Add files via upload
+40a3122 | truongsinhtran04-ux | 2026-11-03 21:02:48 +0700 | Delete datamodel.drawio (1).png
+398b1a7 | binvinh206-stack | 2026-11-03 16:39:37 +0700 | Add files via upload
+57560b1 | Uy Ngo | 2026-11-02 14:21:12 +0700 | Merge branch updates into Uy
+61ffd50 | OrangeXDl | 2026-11-02 12:07:55 +0700 | Add files via upload
+5ee026f | binvinh206-stack | 2026-11-02 10:58:46 +0700 | Add files via upload
+e97cc98 | binvinh206-stack | 2026-11-02 05:02:18 +0700 | Add files via upload
+d705652 | Uy Ngo | 2026-11-02 00:47:31 +0700 | Update Phone Book documentation
+1e50bc2 | truongsinhtran04-ux | 2026-11-02 00:32:52 +0700 | Add files via upload
+afd854f | truongsinhtran04-ux | 2026-11-02 00:32:14 +0700 | Add files via upload
+d02bce9 | truongsinhtran04-ux | 2026-11-02 00:31:48 +0700 | Add files via upload
+51338c8 | truongsinhtran04-ux | 2026-11-02 00:30:28 +0700 | Delete datamodel (2).drawio
+c3952fa | truongsinhtran04-ux | 2026-11-02 00:30:11 +0700 | Delete datamodel.drawio.png
+bc3bcb7 | truongsinhtran04-ux | 2026-11-01 23:22:52 +0700 | Add files via upload
+a3c8340 | truongsinhtran04-ux | 2026-11-01 23:22:33 +0700 | Delete Screenshot (442).png
+1f1b078 | truongsinhtran04-ux | 2026-11-01 23:21:58 +0700 | Add files via upload
+f5aa988 | hieulc0481-svg | 2026-11-01 20:02:06 +0700 | Add files via upload
+911e010 | truongsinhtran04-ux | 2026-11-01 16:22:17 +0700 | Delete datamodel (2).drawio
+b32c928 | Uy Ngo | 2026-11-01 16:06:44 +0700 | DFD and Use Case file pdf
+23754bb | truongsinhtran04-ux | 2026-10-31 22:06:52 +0700 | Add files via upload
+d5102dd | Uy Ngo | 2026-10-30 10:12:49 +0700 | Update Requiment Doc
+ef27be8 | Uy Ngo | 2026-10-30 10:04:33 +0700 | Add branch Uy
+be9b537 | binvinh206-stack | 2026-10-25 18:31:01 +0700 | Add files via upload
+004422c | binvinh206-stack | 2026-10-25 02:08:56 +0700 | Initial commit
