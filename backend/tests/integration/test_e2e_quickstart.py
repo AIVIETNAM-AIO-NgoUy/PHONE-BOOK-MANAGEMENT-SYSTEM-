@@ -285,15 +285,24 @@ class TestE2EQuickstartVerification:
         assert b"Alice Smith" in dup_resp.content
         assert b"0901234567" in dup_resp.content
 
-        # Create duplicate source record with extra phone, note, group, and favorite
-        alice_dup = _create_contact_via_http(
-            client,
+        # Seed duplicate source record with extra phone, note, group, and favorite for Smart Merge
+        alice_dup = Contact.objects.create(
+            book=owner.contact_book,
             full_name="Alice Smith",
-            primary_phone="0901234567",
-            primary_phone_type="Mobile",
-            secondary_phones=[("0243888999", "Work")],
             address="123 Main Street",
             notes="Duplicate conference note.",
+        )
+        PhoneNumber.objects.create(
+            contact=alice_dup,
+            phone_number="0901234567",
+            phone_type="Mobile",
+            is_primary=True,
+        )
+        PhoneNumber.objects.create(
+            contact=alice_dup,
+            phone_number="0243888999",
+            phone_type="Work",
+            is_primary=False,
         )
         vip_group = Group.objects.create(book=owner.contact_book, group_name="VIP")
         ContactGroup.objects.create(contact=alice_dup, group=vip_group)

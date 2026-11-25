@@ -314,3 +314,72 @@ class TestContactFormsAndFormsets:
         auth_root = auth_client.get("/")
         assert auth_root.status_code == 302
         assert auth_root.url == "/contacts/"
+
+    def test_contact_form_and_formset_reject_duplicates_within_book(self, user_factory):
+        user = user_factory(username="dup_unit_u", email="dupunit@example.com")
+        other_user = user_factory(username="dup_unit_other", email="dupunitother@example.com")
+        existing = Contact.objects.create(book=user.contact_book, full_name="Alice Smith")
+        PhoneNumber.objects.create(
+            contact=existing, phone_number="0901234567", phone_type="Mobile", is_primary=True
+        )
+
+        # Duplicate full_name (case + whitespace variant) in same book -> rejected
+        dup_name_form = contact_forms.ContactForm(
+            data={"full_name": "  alice   SMITH  "},
+            book=user.contact_book,
+        )
+        assert not dup_name_form.is_valid()
+        assert contact_forms.ERR_CONTACT_NAME_DUPLICATE in dup_name_form.errors["full_name"]
+
+        # Same name in different ContactBook -> allowed
+        other_book_form = contact_forms.ContactForm(
+            data={"full_name": "Alice Smith"},
+            book=other_user.contact_book,
+        )
+        assert other_book_form.is_valid()
+
+        # Editing the same contact with its own name -> allowed
+        self_edit_form = contact_forms.ContactForm(
+            data={"full_name": "Alice Smith"},
+            instance=existing,
+            book=user.contact_book,
+        )
+        assert self_edit_form.is_valid()
+
+        # Duplicate phone (+84 / 0 equivalence) against existing contact -> rejected on form row
+        dup_phone_fs = contact_forms.PhoneNumberInlineFormSet(
+            data={
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "0",
+                "phone_numbers-0-phone_number": "+84901234567",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+            prefix="phone_numbers",
+            book=user.contact_book,
+        )
+        assert not dup_phone_fs.is_valid()
+        assert (
+            contact_forms.ERR_CONTACT_PHONE_DUPLICATE
+            in dup_phone_fs.forms[0].errors["phone_number"]
+        )
+
+        # Duplicate phone numbers within the same contact -> rejected on second row
+        intra_dup_fs = contact_forms.PhoneNumberInlineFormSet(
+            data={
+                "phone_numbers-TOTAL_FORMS": "2",
+                "phone_numbers-INITIAL_FORMS": "0",
+                "phone_numbers-0-phone_number": "0912345678",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+                "phone_numbers-1-phone_number": "+84912345678",
+                "phone_numbers-1-phone_type": "Work",
+            },
+            prefix="phone_numbers",
+            book=user.contact_book,
+        )
+        assert not intra_dup_fs.is_valid()
+        assert (
+            contact_forms.ERR_CONTACT_PHONE_DUPLICATE_IN_CONTACT
+            in intra_dup_fs.forms[1].errors["phone_number"]
+        )

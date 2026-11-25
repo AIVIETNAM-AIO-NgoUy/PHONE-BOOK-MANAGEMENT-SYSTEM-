@@ -61,7 +61,7 @@ class TestDuplicateCheckContract:
         assert b"0905111222" in phone_resp.content
         assert f"/contacts/{existing.pk}/".encode() in phone_resp.content
         assert b"View Existing" in phone_resp.content
-        assert b"Proceed Anyway" in phone_resp.content
+        assert b"Proceed Anyway" not in phone_resp.content
 
         # Formset phone input match (from contact_form.html hx-include)
         formset_resp = client.post(
@@ -288,3 +288,168 @@ class TestSmartMergeContract:
         assert not Contact.objects.filter(pk=source.pk).exists()
         target.refresh_from_db()
         assert target.email == "merge@example.com"
+
+
+@pytest.mark.django_db
+class TestDuplicateBlockingContract:
+    """Contract & integration tests for blocking duplicate contacts on create and edit."""
+
+    def test_create_blocks_duplicate_full_name_variants(self, authenticated_client):
+        from apps.contacts.forms import ERR_CONTACT_NAME_DUPLICATE
+        from apps.contacts.models import Contact
+
+        client, owner = authenticated_client(username="blk_name", email="blkname@example.com")
+        _create_contact(owner, full_name="Alice Smith", phones=[("0901234567", "Mobile", True)])
+
+        resp = client.post(
+            "/contacts/create/",
+            {
+                "full_name": "  alice   SMITH  ",
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "0",
+                "phone_numbers-0-phone_number": "0988777666",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+        )
+        assert resp.status_code == 400
+        assert ERR_CONTACT_NAME_DUPLICATE.encode() in resp.content
+        assert Contact.objects.filter(book=owner.contact_book).count() == 1
+
+    def test_create_blocks_duplicate_phone_number_and_vn_equivalence(self, authenticated_client):
+        from apps.contacts.forms import ERR_CONTACT_PHONE_DUPLICATE
+        from apps.contacts.models import Contact
+
+        client, owner = authenticated_client(username="blk_phone", email="blkphone@example.com")
+        _create_contact(owner, full_name="Alice Smith", phones=[("0901234567", "Mobile", True)])
+
+        resp = client.post(
+            "/contacts/create/",
+            {
+                "full_name": "Different Name",
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "0",
+                "phone_numbers-0-phone_number": "+84 901 234 567",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+        )
+        assert resp.status_code == 400
+        assert ERR_CONTACT_PHONE_DUPLICATE.encode() in resp.content
+        assert Contact.objects.filter(book=owner.contact_book).count() == 1
+
+    def test_create_blocks_duplicate_phones_within_same_contact(self, authenticated_client):
+        from apps.contacts.forms import ERR_CONTACT_PHONE_DUPLICATE_IN_CONTACT
+        from apps.contacts.models import Contact
+
+        client, owner = authenticated_client(username="blk_intra", email="blkintra@example.com")
+
+        resp = client.post(
+            "/contacts/create/",
+            {
+                "full_name": "Bob Vance",
+                "phone_numbers-TOTAL_FORMS": "2",
+                "phone_numbers-INITIAL_FORMS": "0",
+                "phone_numbers-0-phone_number": "0912345678",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+                "phone_numbers-1-phone_number": "+84912345678",
+                "phone_numbers-1-phone_type": "Work",
+            },
+        )
+        assert resp.status_code == 400
+        assert ERR_CONTACT_PHONE_DUPLICATE_IN_CONTACT.encode() in resp.content
+        assert Contact.objects.filter(book=owner.contact_book).count() == 0
+
+    def test_edit_allows_own_name_and_phone_but_blocks_collision_with_other(
+        self, authenticated_client
+    ):
+        from apps.contacts.forms import ERR_CONTACT_NAME_DUPLICATE, ERR_CONTACT_PHONE_DUPLICATE
+
+        client, owner = authenticated_client(username="blk_edit", email="blkedit@example.com")
+        c1 = _create_contact(
+            owner, full_name="Alice Smith", phones=[("0901234567", "Mobile", True)]
+        )
+        c2 = _create_contact(owner, full_name="Bob Vance", phones=[("0912345678", "Mobile", True)])
+        c2_phone = c2.phone_numbers.first()
+
+        # Keeping own name and phone while updating email -> 302
+        ok_resp = client.post(
+            f"/contacts/{c2.pk}/edit/",
+            {
+                "full_name": "Bob Vance",
+                "email": "bob@example.org",
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "1",
+                "phone_numbers-0-id": str(c2_phone.pk),
+                "phone_numbers-0-contact": str(c2.pk),
+                "phone_numbers-0-phone_number": "0912345678",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+        )
+        assert ok_resp.status_code == 302
+        c2.refresh_from_db()
+        assert c2.email == "bob@example.org"
+
+        # Colliding with c1's full_name -> 400
+        name_dup_resp = client.post(
+            f"/contacts/{c2.pk}/edit/",
+            {
+                "full_name": "alice   smith",
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "1",
+                "phone_numbers-0-id": str(c2_phone.pk),
+                "phone_numbers-0-contact": str(c2.pk),
+                "phone_numbers-0-phone_number": "0912345678",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+        )
+        assert name_dup_resp.status_code == 400
+        assert ERR_CONTACT_NAME_DUPLICATE.encode() in name_dup_resp.content
+        c2.refresh_from_db()
+        assert c2.full_name == "Bob Vance"
+
+        # Colliding with c1's phone_number (+84 equivalence) -> 400
+        phone_dup_resp = client.post(
+            f"/contacts/{c2.pk}/edit/",
+            {
+                "full_name": "Bob Vance",
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "1",
+                "phone_numbers-0-id": str(c2_phone.pk),
+                "phone_numbers-0-contact": str(c2.pk),
+                "phone_numbers-0-phone_number": "+84901234567",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+        )
+        assert phone_dup_resp.status_code == 400
+        assert ERR_CONTACT_PHONE_DUPLICATE.encode() in phone_dup_resp.content
+        c2_phone.refresh_from_db()
+        assert c2_phone.phone_number == "0912345678"
+        assert c1.full_name == "Alice Smith"
+
+    def test_different_contact_books_allow_same_name_and_phone(
+        self, authenticated_client, user_factory
+    ):
+        from apps.contacts.models import Contact
+
+        client, owner = authenticated_client(username="blk_book1", email="blkbook1@example.com")
+        other = user_factory(username="blk_book2", email="blkbook2@example.com")
+        _create_contact(other, full_name="Shared Name", phones=[("0901234567", "Mobile", True)])
+
+        resp = client.post(
+            "/contacts/create/",
+            {
+                "full_name": "Shared Name",
+                "phone_numbers-TOTAL_FORMS": "1",
+                "phone_numbers-INITIAL_FORMS": "0",
+                "phone_numbers-0-phone_number": "0901234567",
+                "phone_numbers-0-phone_type": "Mobile",
+                "phone_numbers-0-is_primary": "on",
+            },
+        )
+        assert resp.status_code == 302
+        assert Contact.objects.filter(book=owner.contact_book, full_name="Shared Name").exists()
