@@ -7,11 +7,17 @@ from django.http import QueryDict
 from django.urls import reverse_lazy
 
 from apps.contacts.models import Contact, PhoneNumber
+from apps.contacts.services import DuplicateDetectionService
 from apps.core import utils as core_utils
 from apps.groups.models import Group
 
 ERR_CONTACT_NAME_REQUIRED = "Full name is required."
+ERR_CONTACT_NAME_DUPLICATE = "A contact with this full name already exists."
 ERR_CONTACT_PHONE_REQUIRED = "At least one primary phone number is required."
+ERR_CONTACT_PHONE_DUPLICATE = "This phone number already belongs to another contact."
+ERR_CONTACT_PHONE_DUPLICATE_IN_CONTACT = (
+    "Duplicate phone numbers are not allowed for the same contact."
+)
 ERR_CONTACT_PRIMARY_EXACT = "Exactly one phone number must be marked as primary."
 ERR_CONTACT_NOTES_TOO_LONG = "Notes cannot exceed 1,000 characters."
 
@@ -137,6 +143,15 @@ class ContactForm(forms.ModelForm):
         )
         if not cleaned:
             raise ValidationError(ERR_CONTACT_NAME_REQUIRED, code="name_required")
+        if self.book is not None:
+            exclude_id = self.instance.pk if self.instance and self.instance.pk else None
+            duplicates = DuplicateDetectionService.find_duplicates(
+                book=self.book,
+                full_name=cleaned,
+                exclude_contact_id=exclude_id,
+            )
+            if any(candidate.has_name_match for candidate in duplicates):
+                raise ValidationError(ERR_CONTACT_NAME_DUPLICATE, code="duplicate_name")
         return cleaned
 
     def clean_email(self) -> str | None:
@@ -237,7 +252,13 @@ class PhoneNumberForm(forms.ModelForm):
 
 
 class BasePhoneNumberInlineFormSet(BaseInlineFormSet):
-    """Inline formset enforcing >= 1 phone number and exactly one primary flag."""
+    """Inline formset enforcing >= 1 phone number, uniqueness, and exactly one primary flag."""
+
+    def __init__(self, *args, book=None, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        if book is None and self.instance is not None and getattr(self.instance, "book_id", None):
+            book = self.instance.book
+        self.book = book
 
     def clean(self) -> None:
         super().clean()
@@ -267,6 +288,54 @@ class BasePhoneNumberInlineFormSet(BaseInlineFormSet):
         total_active = len(active_valid_forms) + len(active_error_forms)
         if total_active == 0:
             raise ValidationError(ERR_CONTACT_PHONE_REQUIRED, code="phone_required")
+
+        if any(self.errors):
+            return
+
+        seen_keys: set[str] = set()
+        active_phone_numbers: list[str] = []
+        for form in active_valid_forms:
+            phone_val = form.cleaned_data.get("phone_number") or ""
+            keys = DuplicateDetectionService.canonical_phone_keys(phone_val) or {
+                phone_val.strip().casefold()
+            }
+            if keys & seen_keys:
+                form.add_error(
+                    "phone_number",
+                    ValidationError(
+                        ERR_CONTACT_PHONE_DUPLICATE_IN_CONTACT,
+                        code="duplicate_phone_in_contact",
+                    ),
+                )
+            else:
+                seen_keys.update(keys)
+                active_phone_numbers.append(phone_val)
+
+        if self.book is not None and active_phone_numbers:
+            exclude_id = self.instance.pk if self.instance and self.instance.pk else None
+            duplicates = DuplicateDetectionService.find_duplicates(
+                book=self.book,
+                phone_numbers=active_phone_numbers,
+                exclude_contact_id=exclude_id,
+            )
+            existing_keys: set[str] = set()
+            for candidate in duplicates:
+                for matched_phone in candidate.matched_phones:
+                    existing_keys.update(
+                        DuplicateDetectionService.canonical_phone_keys(matched_phone)
+                        or {matched_phone.strip().casefold()}
+                    )
+            if existing_keys:
+                for form in active_valid_forms:
+                    phone_val = form.cleaned_data.get("phone_number") or ""
+                    keys = DuplicateDetectionService.canonical_phone_keys(phone_val) or {
+                        phone_val.strip().casefold()
+                    }
+                    if keys & existing_keys:
+                        form.add_error(
+                            "phone_number",
+                            ValidationError(ERR_CONTACT_PHONE_DUPLICATE, code="duplicate_phone"),
+                        )
 
         if any(self.errors):
             return

@@ -24,9 +24,7 @@ def _seed_contact(user, *, full_name, phones=None, **kwargs):
 class TestDuplicateDetectionAndSmartMergeIntegration:
     """End-to-end integration tests for US4 Scenarios 1-3, FR-017, FR-018, EC-001, and SC-005."""
 
-    def test_us4_proactive_duplicate_warning_and_non_blocking_proceed_anyway(
-        self, authenticated_client
-    ):
+    def test_us4_proactive_duplicate_warning_and_blocking_create(self, authenticated_client):
         from apps.contacts.models import Contact
 
         client, owner = authenticated_client(username="us4_warn", email="us4warn@example.com")
@@ -42,7 +40,7 @@ class TestDuplicateDetectionAndSmartMergeIntegration:
         assert b"/contacts/check-duplicate/" in form_page.content
         assert b'id="duplicate-warning-container"' in form_page.content
 
-        # 2. User enters matching phone variant -> non-blocking soft warning card
+        # 2. User enters matching phone variant -> conflict warning card without "Proceed Anyway"
         warn_resp = client.post(
             "/contacts/check-duplicate/",
             {
@@ -55,9 +53,9 @@ class TestDuplicateDetectionAndSmartMergeIntegration:
         assert b"Michael Brown" in warn_resp.content
         assert b"0905111222" in warn_resp.content
         assert f"/contacts/{existing.pk}/".encode() in warn_resp.content
-        assert b"Proceed Anyway" in warn_resp.content
+        assert b"Proceed Anyway" not in warn_resp.content
 
-        # 3. User ignores warning and creates separate contact anyway (FR-018 soft warning)
+        # 3. Submitting duplicate phone on create is blocked with HTTP 400
         create_resp = client.post(
             "/contacts/create/",
             {
@@ -69,17 +67,21 @@ class TestDuplicateDetectionAndSmartMergeIntegration:
                 "phone_numbers-0-is_primary": "on",
             },
         )
-        assert create_resp.status_code == 302
-        created = Contact.objects.get(book=owner.contact_book, full_name="Mike Brown")
-        assert created.pk != existing.pk
+        assert create_resp.status_code == 400
+        assert not Contact.objects.filter(book=owner.contact_book, full_name="Mike Brown").exists()
 
-        # 4. On edit of created contact, duplicate check excludes itself and offers Smart Merge
+        # 4. On edit of an existing contact, duplicate check excludes itself and offers Smart Merge
+        other = _seed_contact(
+            owner,
+            full_name="Mike Brown",
+            phones=[("0906111222", "Mobile", True)],
+        )
         edit_warn = client.post(
             "/contacts/check-duplicate/",
             {
                 "full_name": "Mike Brown",
                 "phone_numbers-0-phone_number": "0905111222",
-                "exclude_contact_id": str(created.pk),
+                "exclude_contact_id": str(other.pk),
             },
             HTTP_HX_REQUEST="true",
         )

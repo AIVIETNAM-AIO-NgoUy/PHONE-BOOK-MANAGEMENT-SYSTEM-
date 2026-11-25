@@ -56,6 +56,7 @@ def _persist_contact_with_phones(
     contact_book: ContactBook,
 ) -> Contact:
     """Atomically save a Contact, PhoneNumber records, avatar, and group memberships."""
+    ContactBook.objects.select_for_update().get(pk=contact_book.pk)
     contact = contact_form.save(commit=False)
     contact.book = contact_book
     old_avatar = contact.avatar if contact.pk else None
@@ -331,26 +332,30 @@ class ContactCreateView(View):
     def post(self, request: HttpRequest) -> HttpResponse:
         book = _get_user_contact_book(request.user)
         post_data = contact_forms.normalize_contact_post_data(request.POST, prefix="phone_numbers")
-        form = contact_forms.ContactForm(post_data, request.FILES, book=book)
-        phone_formset = contact_forms.PhoneNumberInlineFormSet(post_data, prefix="phone_numbers")
-
-        if not (form.is_valid() and phone_formset.is_valid()):
-            return render(
-                request,
-                self.template_name,
-                {
-                    "form": form,
-                    "phone_formset": phone_formset,
-                    "is_edit": False,
-                },
-                status=400,
+        with transaction.atomic():
+            ContactBook.objects.select_for_update().get(pk=book.pk)
+            form = contact_forms.ContactForm(post_data, request.FILES, book=book)
+            phone_formset = contact_forms.PhoneNumberInlineFormSet(
+                post_data, prefix="phone_numbers", book=book
             )
 
-        contact = _persist_contact_with_phones(
-            contact_form=form,
-            phone_formset=phone_formset,
-            contact_book=book,
-        )
+            if not (form.is_valid() and phone_formset.is_valid()):
+                return render(
+                    request,
+                    self.template_name,
+                    {
+                        "form": form,
+                        "phone_formset": phone_formset,
+                        "is_edit": False,
+                    },
+                    status=400,
+                )
+
+            contact = _persist_contact_with_phones(
+                contact_form=form,
+                phone_formset=phone_formset,
+                contact_book=book,
+            )
         messages.success(request, "Contact created successfully.")
         detail_url = reverse("contacts:detail", kwargs={"pk": contact.pk})
 
@@ -388,6 +393,7 @@ class ContactEditView(View):
     def post(self, request: HttpRequest, pk: int) -> HttpResponse:
         book = _get_user_contact_book(request.user)
         with transaction.atomic():
+            ContactBook.objects.select_for_update().get(pk=book.pk)
             try:
                 contact = Contact.objects.select_for_update().get(pk=pk, book=book)
             except Contact.DoesNotExist as exc:
@@ -408,6 +414,7 @@ class ContactEditView(View):
                 post_data,
                 instance=contact,
                 prefix="phone_numbers",
+                book=book,
             )
 
             if not (form.is_valid() and phone_formset.is_valid()):
